@@ -1,0 +1,12 @@
+{
+  "name": "@canvix-react/schema-widget",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@canvix-react/types": "workspace:*",
+    "nanoid": "^5.1.5"
+  }
+}

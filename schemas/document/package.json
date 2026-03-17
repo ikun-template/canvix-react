@@ -1,0 +1,12 @@
+{
+  "name": "@canvix-react/schema-document",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@canvix-react/schema-page": "workspace:*",
+    "@canvix-react/types": "workspace:*"
+  }
+}

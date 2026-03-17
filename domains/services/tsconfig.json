@@ -1,0 +1,8 @@
+{
+  "extends": "../../.config/typescript/tsconfig.pkg.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2020", "DOM"]
+  },
+  "include": ["src"]
+}

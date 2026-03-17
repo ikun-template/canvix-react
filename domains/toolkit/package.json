@@ -1,0 +1,21 @@
+{
+  "name": "@canvix-react/toolkit",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./editor": "./src/editor/index.ts"
+  },
+  "dependencies": {
+    "@canvix-react/chronicle": "workspace:*",
+    "@canvix-react/schema-document": "workspace:*",
+    "@canvix-react/schema-page": "workspace:*",
+    "@canvix-react/schema-widget": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  }
+}

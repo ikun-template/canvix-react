@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist"
+  },
+  "extends": "../../.config/typescript/tsconfig.pkg.json",
+  "include": ["src/**/*"]
+}

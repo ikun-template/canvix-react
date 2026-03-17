@@ -1,0 +1,11 @@
+{
+  "name": "@canvix-react/services",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "idb": "^8.0.2"
+  }
+}

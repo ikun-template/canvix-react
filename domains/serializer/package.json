@@ -1,0 +1,15 @@
+{
+  "name": "@canvix-react/serializer",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@canvix-react/schema-document": "workspace:*",
+    "@canvix-react/schema-page": "workspace:*",
+    "@canvix-react/schema-widget": "workspace:*",
+    "@canvix-react/services": "workspace:*",
+    "nanoid": "^5.1.5"
+  }
+}

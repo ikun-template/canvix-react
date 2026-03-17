@@ -1,0 +1,13 @@
+# 项目名称
+name: template
+
+# runtime/development 共用配置
+shared:
+
+# runtime 配置
+runtime:
+
+# development 配置
+development:
+  server:
+    port: 1620

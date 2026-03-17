@@ -1,0 +1,11 @@
+{
+  "name": "@canvix-react/locales",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@canvix-react/i18n": "workspace:*"
+  }
+}

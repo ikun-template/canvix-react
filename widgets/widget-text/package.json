@@ -1,0 +1,19 @@
+{
+  "name": "@canvix-react/widget-text",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./editor": "./src/editor.ts",
+    "./viewer": "./src/viewer.ts",
+    "./definition": "./src/definition.ts"
+  },
+  "dependencies": {
+    "@canvix-react/widget-registry": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  }
+}

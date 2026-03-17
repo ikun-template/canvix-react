@@ -1,0 +1,23 @@
+{
+  "name": "@canvix-react/dock-viewer",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@canvix-react/chronicle": "workspace:*",
+    "@canvix-react/schema-document": "workspace:*",
+    "@canvix-react/schema-page": "workspace:*",
+    "@canvix-react/schema-widget": "workspace:*",
+    "@canvix-react/widget-registry": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19"
+  }
+}

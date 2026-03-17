@@ -1,0 +1,11 @@
+packages:
+  - apps/*
+  - docks/*
+  - domains/*
+  - layouts/*
+  - packages/*
+  - schemas/*
+  - widgets/*
+
+onlyBuiltDependencies:
+  - esbuild

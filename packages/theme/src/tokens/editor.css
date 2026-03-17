@@ -1,0 +1,13 @@
+:root {
+  --ed-canvas-bg: hsl(var(--muted));
+  --ed-grid-color: hsl(var(--border));
+  --ed-selection: hsl(var(--primary));
+  --ed-selection-bg: hsl(var(--primary) / 0.15);
+  --ed-drag-handle: hsl(var(--accent-foreground));
+  --ed-widget-outline: hsl(var(--ring));
+  --ed-drop-target: hsl(var(--primary) / 0.3);
+}
+
+.dark {
+  --ed-canvas-bg: hsl(222 20% 8%);
+}

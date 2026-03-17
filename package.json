@@ -1,0 +1,29 @@
+{
+  "name": "canvix-react",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "main": "index.js",
+  "scripts": {
+    "format": "oxfmt --write",
+    "format:check": "oxfmt --check",
+    "lint": "pnpm lint:types && oxlint .",
+    "lint:fix": "oxlint . --fix",
+    "lint:types": "pnpm -r --parallel run lint",
+    "prepare": "husky",
+    "typecheck": "pnpm -r --parallel run typecheck"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "oxfmt": "^0.28.0",
+    "oxlint": "^1.43.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.21.1",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.11.0"
+}

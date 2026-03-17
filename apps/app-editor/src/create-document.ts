@@ -1,0 +1,55 @@
+import { documentDefaults } from '@canvix-react/schema-document';
+import { pageDefaults } from '@canvix-react/schema-page';
+import { widgetDefaults } from '@canvix-react/schema-widget';
+
+export function createDefaultDocument() {
+  return documentDefaults({
+    title: 'Untitled',
+    pages: [
+      pageDefaults({
+        name: 'Page 1',
+        widgets: [
+          widgetDefaults({
+            type: 'text',
+            name: 'Hello',
+            mode: 'absolute',
+            position: { axis: [100, 100] },
+            layout: { size: [200, 80] },
+            custom_data: {
+              content: 'Hello, Canvix!',
+              fontSize: 24,
+              color: '#333',
+              align: 'center',
+            },
+          }),
+          widgetDefaults({
+            type: 'shape',
+            name: 'Rect',
+            mode: 'absolute',
+            position: { axis: [400, 100] },
+            layout: { size: [150, 150] },
+            custom_data: {
+              shape: 'rect',
+              fill: '#4f9cf5',
+              stroke: '',
+              strokeWidth: 0,
+              borderRadius: 8,
+            },
+          }),
+          widgetDefaults({
+            type: 'image',
+            name: 'Image',
+            mode: 'absolute',
+            position: { axis: [100, 250] },
+            layout: { size: [200, 150] },
+            custom_data: {
+              src: '',
+              alt: 'Placeholder',
+              fit: 'cover',
+            },
+          }),
+        ],
+      }),
+    ],
+  });
+}
