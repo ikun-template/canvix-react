@@ -4,6 +4,7 @@ import type {
   UpdateOptions,
 } from '@canvix-react/chronicle';
 import type { WidgetRegistry } from '@canvix-react/widget-registry';
+import type { ComponentType } from 'react';
 
 import type { EditorState } from './editor-state.js';
 import type { EventBus } from './event-bus.js';
@@ -38,5 +39,9 @@ export interface PluginInstance {
 
 export interface PluginDefinition {
   name: string;
+  /** Slot name this plugin renders into (e.g. 'canvas', 'sidebar'). */
+  slot?: string;
+  /** React component rendered via portal into the slot. Receives PluginContext as props. */
+  component?: ComponentType<{ ctx: PluginContext }>;
   setup(ctx: PluginContext): PluginInstance | Promise<PluginInstance>;
 }

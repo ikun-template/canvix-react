@@ -1,15 +1,17 @@
 import type { WidgetRuntime, WidgetRaw } from '@canvix-react/schema-widget';
+import { useDocumentRef, useWidget } from '@canvix-react/toolkit-shared';
 
-import { useDocument } from '../context/document.js';
-import { useWidget } from '../context/widget.js';
+import { useEditor } from '../context/editor.js';
 
-export function useWidgetToolkit() {
-  const { chronicle, document } = useDocument();
+export function useWidgetEditor() {
+  const { chronicle } = useEditor();
+  const { getDocument } = useDocumentRef();
   const { widgetId, pageId } = useWidget();
 
   return {
     getWidget(): Readonly<WidgetRuntime> {
-      const page = document.pages.find(p => p.id === pageId);
+      const doc = getDocument();
+      const page = doc.pages.find(p => p.id === pageId);
       if (!page) throw new Error(`Page not found: ${pageId}`);
       const widget = page.widgets.find(w => w.id === widgetId);
       if (!widget) throw new Error(`Widget not found: ${widgetId}`);
@@ -30,16 +32,15 @@ export function useWidgetToolkit() {
     },
 
     addToSlot(slotName: string, widget: WidgetRaw) {
-      // 1. Add widget to page's widgets array
       chronicle.update({
         target: 'page',
         id: pageId,
         operations: [{ kind: 'add', chain: ['widgets'], value: widget }],
       });
-      // 2. Add widget id to slot array
       const wId = widget.id;
       if (wId) {
-        const page = document.pages.find(p => p.id === pageId);
+        const doc = getDocument();
+        const page = doc.pages.find(p => p.id === pageId);
         const parent = page?.widgets.find(w => w.id === widgetId);
         const slotArr = parent?.slots?.[slotName];
         const idx = slotArr ? slotArr.length : 0;
@@ -63,8 +64,8 @@ export function useWidgetToolkit() {
     },
 
     removeFromSlot(slotName: string, targetWidgetId: string) {
-      // 1. Find index and remove widget id from slot array
-      const page = document.pages.find(p => p.id === pageId);
+      const doc = getDocument();
+      const page = doc.pages.find(p => p.id === pageId);
       const parent = page?.widgets.find(w => w.id === widgetId);
       const slotArr = parent?.slots?.[slotName];
       const idx = slotArr?.indexOf(targetWidgetId) ?? -1;
@@ -78,7 +79,6 @@ export function useWidgetToolkit() {
           ],
         });
       }
-      // 2. Remove widget from page's widgets array
       chronicle.update(
         {
           target: 'page',

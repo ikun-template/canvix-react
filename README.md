@@ -49,13 +49,13 @@
 
 ## Workspace 包一览
 
-| 包名                            | 路径                 | 说明                                          |
-| ------------------------------- | -------------------- | --------------------------------------------- |
-| `@canvix-react/schema-widget`   | `schemas/widget`     | Widget 数据定义 + 默认值 + 迁移               |
-| `@canvix-react/schema-page`     | `schemas/page`       | Page 数据定义                                 |
-| `@canvix-react/schema-document` | `schemas/document`   | Document 数据定义                             |
-| `@canvix-react/chronicle`       | `packages/chronicle` | 变更引擎（Operation / History / undo / redo） |
-| `@canvix-react/types`           | `packages/types`     | 通用类型工具（DeepPartial 等）                |
-| `@ikun-kit/config`              | `packages/config`    | 配置管理（YAML，支持 Node/Browser）           |
-| `app-editor`                    | `apps/app-editor`    | 编辑器应用入口                                |
-| `app-viewer`                    | `apps/app-viewer`    | 查看器应用入口                                |
+| 包名                            | 路径                | 说明                                          |
+| ------------------------------- | ------------------- | --------------------------------------------- |
+| `@canvix-react/schema-widget`   | `schemas/widget`    | Widget 数据定义 + 默认值 + 迁移               |
+| `@canvix-react/schema-page`     | `schemas/page`      | Page 数据定义                                 |
+| `@canvix-react/schema-document` | `schemas/document`  | Document 数据定义                             |
+| `@canvix-react/chronicle`       | `domains/chronicle` | 变更引擎（Operation / History / undo / redo） |
+| `@canvix-react/types`           | `packages/types`    | 通用类型工具（DeepPartial 等）                |
+| `@ikun-kit/config`              | `packages/config`   | 配置管理（YAML，支持 Node/Browser）           |
+| `app-editor`                    | `apps/app-editor`   | 编辑器应用入口                                |
+| `app-viewer`                    | `apps/app-viewer`   | 查看器应用入口                                |

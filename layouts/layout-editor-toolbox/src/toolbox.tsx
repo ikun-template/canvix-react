@@ -11,18 +11,20 @@ export function Toolbox({ ctx }: ToolboxProps) {
   const definitions = ctx.registry.getAll();
 
   const snapshot = useSyncExternalStore(
-    cb => ctx.editorState.onChange(cb),
-    () => ctx.editorState.getSnapshot(),
+    ctx.editorState.onChange,
+    ctx.editorState.getSnapshot,
   );
 
   function addWidget(def: WidgetDefinition) {
     const pageId = snapshot.activePageId;
     if (!pageId) return;
 
+    const page = ctx.chronicle.getDocument().pages.find(p => p.id === pageId);
+    if (!page) return;
+
     const widget = widgetDefaults({
       type: def.type,
       name: def.meta.name,
-      mode: 'absolute',
       position: { axis: [100, 100] },
       custom_data: def.defaultCustomData,
       ...def.defaultSchema,
@@ -31,9 +33,18 @@ export function Toolbox({ ctx }: ToolboxProps) {
     ctx.update({
       target: 'page',
       id: pageId,
-      operations: [{ kind: 'add', chain: ['widgets'], value: widget }],
+      operations: [
+        {
+          kind: 'array:insert',
+          chain: ['widgets'],
+          index: page.widgets.length,
+          value: widget,
+        },
+      ],
     });
   }
+
+  console.debug('[mine] toolbox render effect');
 
   return (
     <div

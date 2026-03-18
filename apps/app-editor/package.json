@@ -18,6 +18,8 @@
     "@canvix-react/schema-document": "workspace:*",
     "@canvix-react/schema-page": "workspace:*",
     "@canvix-react/schema-widget": "workspace:*",
+    "@canvix-react/toolkit-editor": "workspace:*",
+    "@canvix-react/toolkit-shared": "workspace:*",
     "@canvix-react/widget-image": "workspace:*",
     "@canvix-react/widget-registry": "workspace:*",
     "@canvix-react/widget-shape": "workspace:*",

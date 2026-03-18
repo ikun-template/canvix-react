@@ -12,7 +12,6 @@ export function createDefaultDocument() {
           widgetDefaults({
             type: 'text',
             name: 'Hello',
-            mode: 'absolute',
             position: { axis: [100, 100] },
             layout: { size: [200, 80] },
             custom_data: {
@@ -25,7 +24,6 @@ export function createDefaultDocument() {
           widgetDefaults({
             type: 'shape',
             name: 'Rect',
-            mode: 'absolute',
             position: { axis: [400, 100] },
             layout: { size: [150, 150] },
             custom_data: {
@@ -39,7 +37,6 @@ export function createDefaultDocument() {
           widgetDefaults({
             type: 'image',
             name: 'Image',
-            mode: 'absolute',
             position: { axis: [100, 250] },
             layout: { size: [200, 150] },
             custom_data: {

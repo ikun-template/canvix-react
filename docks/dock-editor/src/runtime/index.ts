@@ -29,6 +29,7 @@ export class Runtime {
   private pluginManager: PluginManager;
   private container: HTMLElement;
   private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
+  private _ctx: PluginContext | null = null;
 
   constructor(options: RuntimeOptions) {
     this.chronicle = new Chronicle(options.document);
@@ -78,7 +79,7 @@ export class Runtime {
     };
     document.addEventListener('keydown', this.keydownHandler);
 
-    const ctx = this.createPluginContext();
+    const ctx = this.getPluginContext();
     await this.pluginManager.setupAll(ctx);
     await this.pluginManager.mountAll();
     await this.pluginManager.activateAll();
@@ -96,6 +97,14 @@ export class Runtime {
     await this.pluginManager.destroyAll();
     this.hooks.clear();
     this.events.clear();
+  }
+
+  /** Returns the shared PluginContext (created once, cached). */
+  getPluginContext(): PluginContext {
+    if (!this._ctx) {
+      this._ctx = this.createPluginContext();
+    }
+    return this._ctx;
   }
 
   private createPluginContext(): PluginContext {

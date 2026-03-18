@@ -1,16 +1,16 @@
 {
-  "name": "@canvix-react/toolkit",
+  "name": "@canvix-react/toolkit-editor",
   "version": "0.1.0",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./editor": "./src/editor/index.ts"
+    ".": "./src/index.ts"
   },
   "dependencies": {
     "@canvix-react/chronicle": "workspace:*",
     "@canvix-react/schema-document": "workspace:*",
     "@canvix-react/schema-page": "workspace:*",
-    "@canvix-react/schema-widget": "workspace:*"
+    "@canvix-react/schema-widget": "workspace:*",
+    "@canvix-react/toolkit-shared": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.5"

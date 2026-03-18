@@ -1,19 +1,30 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
-import { useChronicleData } from '@canvix-react/toolkit';
+import type { OperationModel } from '@canvix-react/toolkit-editor';
+import { useChronicleSelective } from '@canvix-react/toolkit-editor';
 import { useSyncExternalStore } from 'react';
 
 interface SidebarProps {
   ctx: PluginContext;
 }
 
+const shouldUpdate = (model: OperationModel) => {
+  if (model.target === 'document') return true;
+  if (model.target === 'page') {
+    return model.operations.some(op => op.chain[0] === 'name');
+  }
+  return false;
+};
+
 export function Sidebar({ ctx }: SidebarProps) {
   const snapshot = useSyncExternalStore(
-    cb => ctx.editorState.onChange(cb),
-    () => ctx.editorState.getSnapshot(),
+    ctx.editorState.onChange,
+    ctx.editorState.getSnapshot,
   );
 
-  const doc = useChronicleData(ctx.chronicle);
+  const doc = useChronicleSelective(shouldUpdate);
   const pages = doc.pages;
+
+  console.debug('[mine] sidebar render effect');
 
   return (
     <div style={{ padding: 12 }}>

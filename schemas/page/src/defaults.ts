@@ -8,9 +8,10 @@ export function pageDefaults(input?: PageRaw): PageRuntime {
     id: input?.id ?? nanoid(6),
     name: input?.name ?? '',
     layout: {
-      size: input?.layout?.size ?? [1920, 1080],
+      size: input?.layout?.size ?? [600, undefined],
     },
-    background: input?.background ?? '',
+    foreground: input?.foreground ?? '#ffffff',
+    background: input?.background ?? '#efefef',
     widgets: (input?.widgets as PageRuntime['widgets']) ?? [],
   };
 }

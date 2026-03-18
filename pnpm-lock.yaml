@@ -47,12 +47,18 @@ importers:
       '@canvix-react/schema-widget':
         specifier: workspace:*
         version: link:../../schemas/widget
+      '@canvix-react/toolkit-editor':
+        specifier: workspace:*
+        version: link:../../domains/toolkit-editor
+      '@canvix-react/toolkit-shared':
+        specifier: workspace:*
+        version: link:../../domains/toolkit-shared
       '@canvix-react/widget-image':
         specifier: workspace:*
         version: link:../../widgets/widget-image
       '@canvix-react/widget-registry':
         specifier: workspace:*
-        version: link:../../packages/widget-registry
+        version: link:../../domains/widget-registry
       '@canvix-react/widget-shape':
         specifier: workspace:*
         version: link:../../widgets/widget-shape
@@ -110,7 +116,7 @@ importers:
     dependencies:
       '@canvix-react/chronicle':
         specifier: workspace:*
-        version: link:../../packages/chronicle
+        version: link:../../domains/chronicle
       '@canvix-react/schema-document':
         specifier: workspace:*
         version: link:../../schemas/document
@@ -122,7 +128,7 @@ importers:
         version: link:../../schemas/widget
       '@canvix-react/widget-registry':
         specifier: workspace:*
-        version: link:../../packages/widget-registry
+        version: link:../../domains/widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -141,7 +147,7 @@ importers:
     dependencies:
       '@canvix-react/chronicle':
         specifier: workspace:*
-        version: link:../../packages/chronicle
+        version: link:../../domains/chronicle
       '@canvix-react/schema-document':
         specifier: workspace:*
         version: link:../../schemas/document
@@ -153,7 +159,7 @@ importers:
         version: link:../../schemas/widget
       '@canvix-react/widget-registry':
         specifier: workspace:*
-        version: link:../../packages/widget-registry
+        version: link:../../domains/widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -168,6 +174,18 @@ importers:
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.13)
 
+  domains/chronicle:
+    dependencies:
+      '@canvix-react/schema-document':
+        specifier: workspace:*
+        version: link:../../schemas/document
+      '@canvix-react/schema-page':
+        specifier: workspace:*
+        version: link:../../schemas/page
+      '@canvix-react/schema-widget':
+        specifier: workspace:*
+        version: link:../../schemas/widget
+
   domains/locales:
     dependencies:
       '@canvix-react/i18n':
@@ -176,21 +194,18 @@ importers:
 
   domains/page-renderer:
     dependencies:
-      '@canvix-react/chronicle':
-        specifier: workspace:*
-        version: link:../../packages/chronicle
       '@canvix-react/schema-page':
         specifier: workspace:*
         version: link:../../schemas/page
       '@canvix-react/schema-widget':
         specifier: workspace:*
         version: link:../../schemas/widget
-      '@canvix-react/toolkit':
+      '@canvix-react/toolkit-shared':
         specifier: workspace:*
-        version: link:../toolkit
+        version: link:../toolkit-shared
       '@canvix-react/widget-registry':
         specifier: workspace:*
-        version: link:../../packages/widget-registry
+        version: link:../widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -223,11 +238,35 @@ importers:
         specifier: ^8.0.2
         version: 8.0.3
 
-  domains/toolkit:
+  domains/theme: {}
+
+  domains/toolkit-editor:
     dependencies:
       '@canvix-react/chronicle':
         specifier: workspace:*
-        version: link:../../packages/chronicle
+        version: link:../chronicle
+      '@canvix-react/schema-document':
+        specifier: workspace:*
+        version: link:../../schemas/document
+      '@canvix-react/schema-page':
+        specifier: workspace:*
+        version: link:../../schemas/page
+      '@canvix-react/schema-widget':
+        specifier: workspace:*
+        version: link:../../schemas/widget
+      '@canvix-react/toolkit-shared':
+        specifier: workspace:*
+        version: link:../toolkit-shared
+      react:
+        specifier: '>=19'
+        version: 19.2.4
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.5
+        version: 19.2.13
+
+  domains/toolkit-shared:
+    dependencies:
       '@canvix-react/schema-document':
         specifier: workspace:*
         version: link:../../schemas/document
@@ -245,17 +284,33 @@ importers:
         specifier: ^19.2.5
         version: 19.2.13
 
+  domains/widget-registry:
+    dependencies:
+      '@canvix-react/schema-widget':
+        specifier: workspace:*
+        version: link:../../schemas/widget
+      react:
+        specifier: '>=19'
+        version: 19.2.4
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.5
+        version: 19.2.13
+
   layouts/layout-editor-canvas:
     dependencies:
       '@canvix-react/dock-editor':
         specifier: workspace:*
         version: link:../../docks/dock-editor
-      '@canvix-react/page-renderer':
+      '@canvix-react/toolkit-editor':
         specifier: workspace:*
-        version: link:../../domains/page-renderer
-      '@canvix-react/toolkit':
+        version: link:../../domains/toolkit-editor
+      '@canvix-react/toolkit-shared':
         specifier: workspace:*
-        version: link:../../domains/toolkit
+        version: link:../../domains/toolkit-shared
+      '@canvix-react/widget-registry':
+        specifier: workspace:*
+        version: link:../../domains/widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -275,12 +330,15 @@ importers:
       '@canvix-react/dock-editor':
         specifier: workspace:*
         version: link:../../docks/dock-editor
-      '@canvix-react/toolkit':
+      '@canvix-react/toolkit-editor':
         specifier: workspace:*
-        version: link:../../domains/toolkit
+        version: link:../../domains/toolkit-editor
+      '@canvix-react/toolkit-shared':
+        specifier: workspace:*
+        version: link:../../domains/toolkit-shared
       '@canvix-react/widget-registry':
         specifier: workspace:*
-        version: link:../../packages/widget-registry
+        version: link:../../domains/widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -300,9 +358,9 @@ importers:
       '@canvix-react/dock-editor':
         specifier: workspace:*
         version: link:../../docks/dock-editor
-      '@canvix-react/toolkit':
+      '@canvix-react/toolkit-editor':
         specifier: workspace:*
-        version: link:../../domains/toolkit
+        version: link:../../domains/toolkit-editor
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -327,7 +385,7 @@ importers:
         version: link:../../schemas/widget
       '@canvix-react/widget-registry':
         specifier: workspace:*
-        version: link:../../packages/widget-registry
+        version: link:../../domains/widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -341,18 +399,6 @@ importers:
       '@types/react-dom':
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.13)
-
-  packages/chronicle:
-    dependencies:
-      '@canvix-react/schema-document':
-        specifier: workspace:*
-        version: link:../../schemas/document
-      '@canvix-react/schema-page':
-        specifier: workspace:*
-        version: link:../../schemas/page
-      '@canvix-react/schema-widget':
-        specifier: workspace:*
-        version: link:../../schemas/widget
 
   packages/config:
     dependencies:
@@ -379,22 +425,7 @@ importers:
 
   packages/performance: {}
 
-  packages/theme: {}
-
   packages/types: {}
-
-  packages/widget-registry:
-    dependencies:
-      '@canvix-react/schema-widget':
-        specifier: workspace:*
-        version: link:../../schemas/widget
-      react:
-        specifier: '>=19'
-        version: 19.2.4
-    devDependencies:
-      '@types/react':
-        specifier: ^19.2.5
-        version: 19.2.13
 
   schemas/document:
     dependencies:
@@ -430,7 +461,7 @@ importers:
     dependencies:
       '@canvix-react/widget-registry':
         specifier: workspace:*
-        version: link:../../packages/widget-registry
+        version: link:../../domains/widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -443,7 +474,7 @@ importers:
     dependencies:
       '@canvix-react/widget-registry':
         specifier: workspace:*
-        version: link:../../packages/widget-registry
+        version: link:../../domains/widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -456,7 +487,7 @@ importers:
     dependencies:
       '@canvix-react/widget-registry':
         specifier: workspace:*
-        version: link:../../packages/widget-registry
+        version: link:../../domains/widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4

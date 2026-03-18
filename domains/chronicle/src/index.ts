@@ -30,6 +30,7 @@ export class Chronicle {
   private doc: DocumentRuntime;
   private history: History;
   private listeners: Set<UpdateListener> = new Set();
+  private _version = 0;
 
   constructor(doc: DocumentRuntime, historyCapacity?: number) {
     this.doc = doc;
@@ -42,6 +43,11 @@ export class Chronicle {
 
   getHistory(): History {
     return this.history;
+  }
+
+  /** Monotonically increasing counter; bumped on every update/undo/redo. */
+  getVersion(): number {
+    return this._version;
   }
 
   update(model: OperationModel, options?: UpdateOptions): OperationModel {
@@ -94,6 +100,7 @@ export class Chronicle {
   }
 
   private notify(model: OperationModel): void {
+    this._version++;
     for (const listener of this.listeners) {
       listener(model);
     }

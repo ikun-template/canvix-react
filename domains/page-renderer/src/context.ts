@@ -1,13 +1,17 @@
-import type { Chronicle } from '@canvix-react/chronicle';
 import type { PageRuntime } from '@canvix-react/schema-page';
 import type { WidgetRegistry } from '@canvix-react/widget-registry';
 import { createContext, useContext } from 'react';
 
+export type WidgetUpdateListener = (widgetId: string) => void;
+export type SubscribeWidgetUpdates = (
+  listener: WidgetUpdateListener,
+) => () => void;
+
 export interface RendererContext {
-  chronicle: Chronicle;
   registry: WidgetRegistry;
   page: PageRuntime;
   mode: 'editor' | 'viewer';
+  subscribeWidgetUpdates?: SubscribeWidgetUpdates;
 }
 
 export const RendererCtx = createContext<RendererContext | null>(null);

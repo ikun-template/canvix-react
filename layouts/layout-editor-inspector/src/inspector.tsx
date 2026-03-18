@@ -1,5 +1,10 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
-import { useChronicleData } from '@canvix-react/toolkit';
+import type { OperationModel } from '@canvix-react/toolkit-editor';
+import {
+  useDocumentRef,
+  WidgetLiveProvider,
+  useWidgetLive,
+} from '@canvix-react/toolkit-shared';
 import type {
   PropertyGroup,
   PropertyItem,
@@ -12,8 +17,8 @@ interface InspectorProps {
 
 export function Inspector({ ctx }: InspectorProps) {
   const snapshot = useSyncExternalStore(
-    cb => ctx.editorState.onChange(cb),
-    () => ctx.editorState.getSnapshot(),
+    ctx.editorState.onChange,
+    ctx.editorState.getSnapshot,
   );
 
   const selected = snapshot.selectedWidgetIds;
@@ -31,8 +36,57 @@ export function Inspector({ ctx }: InspectorProps) {
   }
 
   const widgetId = selected[0];
-  const doc = useChronicleData(ctx.chronicle);
-  const page = doc.pages.find(p => p.id === snapshot.activePageId);
+  const pageId = snapshot.activePageId;
+
+  return (
+    <InspectorWidgetWrapper ctx={ctx} widgetId={widgetId} pageId={pageId} />
+  );
+}
+
+function InspectorWidgetWrapper({
+  ctx,
+  widgetId,
+  pageId,
+}: {
+  ctx: PluginContext;
+  widgetId: string;
+  pageId: string;
+}) {
+  const subscribeWidget = useCallback(
+    (cb: () => void) =>
+      ctx.chronicle.onUpdate((model: OperationModel) => {
+        if (model.target === 'widget' && model.id === widgetId) cb();
+      }),
+    [ctx.chronicle, widgetId],
+  );
+
+  return (
+    <WidgetLiveProvider
+      widgetId={widgetId}
+      pageId={pageId}
+      parentId={null}
+      slotName={null}
+      subscribe={subscribeWidget}
+    >
+      <InspectorContent ctx={ctx} widgetId={widgetId} pageId={pageId} />
+    </WidgetLiveProvider>
+  );
+}
+
+function InspectorContent({
+  ctx,
+  widgetId,
+  pageId,
+}: {
+  ctx: PluginContext;
+  widgetId: string;
+  pageId: string;
+}) {
+  useWidgetLive();
+
+  const { getDocument } = useDocumentRef();
+  const doc = getDocument();
+  const page = doc.pages.find(p => p.id === pageId);
   if (!page) return null;
 
   const widget = page.widgets.find(w => w.id === widgetId);
@@ -40,15 +94,17 @@ export function Inspector({ ctx }: InspectorProps) {
 
   const definition = ctx.registry.get(widget.type);
 
+  console.debug('[mine] inspector render effect');
+
   return (
     <div style={{ padding: 12 }}>
       <h4 style={{ marginBottom: 8 }}>{widget.name || widget.type}</h4>
-      <BaseProperties ctx={ctx} widgetId={widgetId} pageId={page.id} />
+      <BaseProperties ctx={ctx} widgetId={widgetId} pageId={pageId} />
       {definition?.inspector && Array.isArray(definition.inspector.render) && (
         <CustomProperties
           ctx={ctx}
           widgetId={widgetId}
-          pageId={page.id}
+          pageId={pageId}
           groups={definition.inspector.render}
         />
       )}
@@ -67,7 +123,8 @@ function BaseProperties({
   widgetId: string;
   pageId: string;
 }) {
-  const doc = useChronicleData(ctx.chronicle);
+  const { getDocument } = useDocumentRef();
+  const doc = getDocument();
   const page = doc.pages.find(p => p.id === pageId);
   const widget = page?.widgets.find(w => w.id === widgetId);
   if (!widget) return null;
@@ -155,7 +212,8 @@ function CustomProperties({
     [ctx, pageId, widgetId],
   );
 
-  const doc = useChronicleData(ctx.chronicle);
+  const { getDocument } = useDocumentRef();
+  const doc = getDocument();
   const page = doc.pages.find(p => p.id === pageId);
   const widget = page?.widgets.find(w => w.id === widgetId);
   if (!widget) return null;

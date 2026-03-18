@@ -1,36 +1,47 @@
-import type { Chronicle } from '@canvix-react/chronicle';
 import type { PageRuntime } from '@canvix-react/schema-page';
 import {
-  DocumentProvider,
+  DocumentRefProvider,
   PageProvider,
   WidgetProvider,
-} from '@canvix-react/toolkit';
+  type DocumentRefContextValue,
+} from '@canvix-react/toolkit-shared';
 import type { WidgetRegistry } from '@canvix-react/widget-registry';
 import { useMemo } from 'react';
 
-import { RendererCtx, WidgetCtx } from './context.js';
+import {
+  RendererCtx,
+  WidgetCtx,
+  type SubscribeWidgetUpdates,
+} from './context.js';
 import { WidgetShell } from './widget-shell.js';
 
 interface PageRendererProps {
   page: PageRuntime;
-  chronicle: Chronicle;
+  document: DocumentRefContextValue;
   registry: WidgetRegistry;
   mode: 'editor' | 'viewer';
+  subscribeWidgetUpdates?: SubscribeWidgetUpdates;
 }
 
 export function PageRenderer({
   page,
-  chronicle,
+  document: docCtxValue,
   registry,
   mode,
+  subscribeWidgetUpdates,
 }: PageRendererProps) {
-  const docCtxValue = useMemo(
-    () => ({ chronicle, document: chronicle.getDocument() }),
-    [chronicle],
+  const pageCtxValue = useMemo(
+    () => ({
+      pageId: page.id,
+      name: page.name,
+      layout: page.layout,
+      background: page.background,
+      widgetIds: page.widgets.map(w => w.id),
+      version: 0,
+    }),
+    [page],
   );
-  const pageCtxValue = useMemo(() => ({ pageId: page.id }), [page.id]);
 
-  // 根级 widget：没有被任何 slot 引用的 widget
   const slotChildIds = new Set<string>();
   for (const w of page.widgets) {
     if (w.slots) {
@@ -45,9 +56,11 @@ export function PageRenderer({
     .map(w => w.id);
 
   return (
-    <DocumentProvider value={docCtxValue}>
+    <DocumentRefProvider value={docCtxValue}>
       <PageProvider value={pageCtxValue}>
-        <RendererCtx.Provider value={{ chronicle, registry, page, mode }}>
+        <RendererCtx.Provider
+          value={{ registry, page, mode, subscribeWidgetUpdates }}
+        >
           {rootWidgetIds.map(id => (
             <WidgetProvider
               key={id}
@@ -56,6 +69,7 @@ export function PageRenderer({
                 pageId: page.id,
                 parentId: null,
                 slotName: null,
+                version: 0,
               }}
             >
               <WidgetCtx.Provider value={{ widgetId: id }}>
@@ -65,6 +79,6 @@ export function PageRenderer({
           ))}
         </RendererCtx.Provider>
       </PageProvider>
-    </DocumentProvider>
+    </DocumentRefProvider>
   );
 }

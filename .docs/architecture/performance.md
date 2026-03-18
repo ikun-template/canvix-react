@@ -10,14 +10,14 @@
 
 ### 列表层不订阅数据
 
-Page Renderer 的 widget 列表仅维护 id 数组，map 渲染时只传递 `widgetId`（通过 Context），不传递 widget 数据：
+Page Renderer 的 widget 列表仅维护 id 数组，通过 `WidgetLiveProvider` 注入 context，不传递 widget 数据：
 
 ```tsx
 {
   widgetIds.map(id => (
-    <WidgetProvider key={id} widgetId={id}>
+    <WidgetLiveProvider key={id} widgetId={id} subscribe={subscribeWidget}>
       <WidgetShell />
-    </WidgetProvider>
+    </WidgetLiveProvider>
   ));
 }
 ```
@@ -27,11 +27,11 @@ Page Renderer 的 widget 列表仅维护 id 数组，map 渲染时只传递 `wid
 
 ### Context 值稳定
 
-Context 只传递 id（字符串），在组件挂载期间不变。不会因数据变更触发 Context 消费者 re-render。
+`PageLiveContext` 包含 `version` 等响应式数据，但 version 仅在 subscribe 触发时变化，只影响使用了该 context 的消费者。`DocumentContext` 中的 `document` 和 `getDocument` 在应用生命周期内稳定。
 
 ### Widget 自订阅
 
-每个 WidgetShell 独立订阅 Modifier 广播，过滤出自身 id 的 Operation 后才响应。其他 widget 的变更对自身完全无感。
+每个 `WidgetLiveProvider` 通过独立的 `subscribe` prop 订阅更新，过滤出自身 id 的变更后 bump version。其他 widget 的变更对自身完全无感。
 
 ---
 
@@ -51,16 +51,13 @@ WidgetShell 对通用 schema 字段按更新频率分为两类处理：
 | `opacity`       | `style.opacity`                                         |
 | `hide`          | `style.display`                                         |
 
-通过 `ref` 持有 DOM 引用，在 Modifier 订阅回调中直接赋值：
+通过 `ref` 持有 DOM 引用，在订阅回调中直接赋值：
 
 ```typescript
-modifier.onUpdate(ops => {
-  // ... 过滤出自身 widget 的 update 操作
-  if (hasFieldChanged(myOps, ['position', 'axis'])) {
-    const [x, y] = getWidget().position.axis;
-    shellRef.current.style.left = `${x}px`;
-    shellRef.current.style.top = `${y}px`;
-  }
+// page-renderer 中通过 subscribeWidgetUpdates 接收更新通知
+subscribeWidgetUpdates?.(updatedWidgetId => {
+  if (updatedWidgetId !== widgetId) return;
+  applyStyles(shellRef.current, widget);
 });
 ```
 
@@ -112,7 +109,7 @@ class IdleQueue {
 
 - Toolkit 的 `getDocument()` / `getPage()` / `getWidget()` 返回只读引用
 - 开发环境下写入只读对象抛出错误，便于排查
-- 生产环境可省略 Proxy 开销，直接返回原始引用（因为变更只能通过 Modifier 入口）
+- 生产环境可省略 Proxy 开销，直接返回原始引用（因为变更只能通过 Chronicle 入口）
 
 ---
 
@@ -155,7 +152,7 @@ const loadSemaphore = new Semaphore(3);
 
 | 场景            | 策略                     | 效果                 |
 | --------------- | ------------------------ | -------------------- |
-| widget 字段变更 | 自订阅 + chain 过滤      | 仅目标 widget 响应   |
+| widget 字段变更 | subscribe + version 过滤 | 仅目标 widget 响应   |
 | 高频属性变更    | 直接 DOM 操作            | 绕过 React diff      |
 | widget 列表变更 | 列表层只维护 id          | 不触发子组件数据更新 |
 | 首次大量挂载    | requestIdleCallback 队列 | 不阻塞主线程         |

@@ -1,14 +1,16 @@
 import type { DocumentRuntime } from '@canvix-react/schema-document';
 import type { PageRaw } from '@canvix-react/schema-page';
+import { useDocumentRef } from '@canvix-react/toolkit-shared';
 
-import { useDocument } from '../context/document.js';
+import { useEditor } from '../context/editor.js';
 
-export function useDocumentToolkit() {
-  const { chronicle, document } = useDocument();
+export function useDocumentEditor() {
+  const { chronicle } = useEditor();
+  const { getDocument } = useDocumentRef();
 
   return {
     getDocument(): Readonly<DocumentRuntime> {
-      return document;
+      return getDocument();
     },
 
     update(data: { chain: (string | number)[]; value: unknown }[]) {
@@ -35,7 +37,8 @@ export function useDocumentToolkit() {
     },
 
     movePage(pageId: string, to: number) {
-      const from = document.pages.findIndex(p => p.id === pageId);
+      const doc = getDocument();
+      const from = doc.pages.findIndex(p => p.id === pageId);
       if (from < 0) return;
       chronicle.update({
         target: 'document',

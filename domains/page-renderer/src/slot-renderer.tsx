@@ -1,4 +1,4 @@
-import { WidgetProvider } from '@canvix-react/toolkit';
+import { WidgetProvider } from '@canvix-react/toolkit-shared';
 
 import { useRenderer, useWidgetContext, WidgetCtx } from './context.js';
 import { WidgetShell } from './widget-shell.js';
@@ -27,6 +27,7 @@ export function SlotRenderer({ slotName }: SlotRendererProps) {
             pageId: page.id,
             parentId,
             slotName,
+            version: 0,
           }}
         >
           <WidgetCtx.Provider value={{ widgetId: childId, parentId, slotName }}>

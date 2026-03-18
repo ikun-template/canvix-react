@@ -1,16 +1,17 @@
 import type { PageRuntime } from '@canvix-react/schema-page';
 import type { WidgetRaw } from '@canvix-react/schema-widget';
+import { useDocumentRef, usePage } from '@canvix-react/toolkit-shared';
 
-import { useDocument } from '../context/document.js';
-import { usePage } from '../context/page.js';
+import { useEditor } from '../context/editor.js';
 
-export function usePageToolkit() {
-  const { chronicle, document } = useDocument();
+export function usePageEditor() {
+  const { chronicle } = useEditor();
+  const { getDocument } = useDocumentRef();
   const { pageId } = usePage();
 
   return {
     getPage(): Readonly<PageRuntime> {
-      const page = document.pages.find(p => p.id === pageId);
+      const page = getDocument().pages.find(p => p.id === pageId);
       if (!page) throw new Error(`Page not found: ${pageId}`);
       return page;
     },
@@ -44,7 +45,7 @@ export function usePageToolkit() {
     },
 
     moveWidget(widgetId: string, to: number) {
-      const page = document.pages.find(p => p.id === pageId);
+      const page = getDocument().pages.find(p => p.id === pageId);
       if (!page) return;
       const from = page.widgets.findIndex(w => w.id === widgetId);
       if (from < 0) return;

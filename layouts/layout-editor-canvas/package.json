@@ -7,8 +7,9 @@
   },
   "dependencies": {
     "@canvix-react/dock-editor": "workspace:*",
-    "@canvix-react/page-renderer": "workspace:*",
-    "@canvix-react/toolkit": "workspace:*"
+    "@canvix-react/toolkit-editor": "workspace:*",
+    "@canvix-react/toolkit-shared": "workspace:*",
+    "@canvix-react/widget-registry": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.5",

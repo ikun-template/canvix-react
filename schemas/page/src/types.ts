@@ -5,7 +5,8 @@ export interface PageRuntime {
   schema: string;
   id: string;
   name: string;
-  layout: { size: [number, number] };
+  layout: { size?: [number | undefined, number | undefined] };
+  foreground: string;
   background: string;
   widgets: WidgetRuntime[];
 }

@@ -1,7 +1,10 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
-import { PageRenderer } from '@canvix-react/page-renderer';
-import { useChronicleData } from '@canvix-react/toolkit';
-import { useSyncExternalStore } from 'react';
+import type { OperationModel } from '@canvix-react/toolkit-editor';
+import { useChronicleSelective } from '@canvix-react/toolkit-editor';
+import { PageLiveProvider } from '@canvix-react/toolkit-shared';
+import { useCallback, useSyncExternalStore } from 'react';
+
+import { PageEditor } from './page-editor.js';
 
 interface CanvasProps {
   ctx: PluginContext;
@@ -9,14 +12,42 @@ interface CanvasProps {
 
 export function Canvas({ ctx }: CanvasProps) {
   const snapshot = useSyncExternalStore(
-    cb => ctx.editorState.onChange(cb),
-    () => ctx.editorState.getSnapshot(),
+    ctx.editorState.onChange,
+    ctx.editorState.getSnapshot,
   );
 
-  const doc = useChronicleData(ctx.chronicle);
-  const page = doc.pages.find(p => p.id === snapshot.activePageId);
+  const activePageId = snapshot.activePageId;
+
+  const shouldUpdate = useCallback(
+    (model: OperationModel) => {
+      if (model.target === 'document') return true;
+      if (model.target === 'page' && model.id === activePageId) return true;
+      return false;
+    },
+    [activePageId],
+  );
+
+  const doc = useChronicleSelective(shouldUpdate);
+  const page = doc.pages.find(p => p.id === activePageId);
 
   if (!page) return <div style={{ padding: 16, color: '#999' }}>No pages</div>;
+
+  const subscribePage = useCallback(
+    (cb: () => void) =>
+      ctx.chronicle.onUpdate((model: OperationModel) => {
+        if (model.target === 'page' && model.id === page.id) {
+          cb();
+          return;
+        }
+        if (model.target === 'document') {
+          const touchesPages = model.operations.some(
+            op => op.chain[0] === 'pages',
+          );
+          if (touchesPages) cb();
+        }
+      }),
+    [ctx.chronicle, page.id],
+  );
 
   function handleClick(e: React.MouseEvent) {
     const widgetEl = (e.target as HTMLElement).closest<HTMLElement>(
@@ -29,31 +60,33 @@ export function Canvas({ ctx }: CanvasProps) {
     }
   }
 
+  console.debug('[mine] canvas render effect');
+
   return (
     <div
+      data-canvas
       style={{
         width: '100%',
         height: '100%',
-        overflow: 'auto',
+        overflowX: 'auto',
+        overflowY: 'auto',
         position: 'relative',
+        background: page.background,
       }}
       onClick={handleClick}
     >
       <div
         style={{
-          width: page.layout.size[0],
-          height: page.layout.size[1],
-          background: page.background || '#fff',
+          width: page.layout.size?.[0],
+          height: page.layout.size?.[1],
+          background: page.foreground || '#fff',
           position: 'relative',
           margin: '0 auto',
         }}
       >
-        <PageRenderer
-          page={page}
-          chronicle={ctx.chronicle}
-          registry={ctx.registry}
-          mode="editor"
-        />
+        <PageLiveProvider pageId={page.id} subscribe={subscribePage}>
+          <PageEditor ctx={ctx} registry={ctx.registry} />
+        </PageLiveProvider>
       </div>
     </div>
   );
