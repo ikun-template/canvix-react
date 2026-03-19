@@ -1,3 +1,4 @@
+import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
 import type { WidgetDefinition } from '@canvix-react/widget-registry';
 
 import { TextEditor } from './editor.js';
@@ -27,9 +28,10 @@ export const textDefinition: WidgetDefinition<TextData> = {
     viewer: TextViewer,
   },
   inspector: {
-    render: [
+    render: () => [
+      createBasePropertyGroup(),
       {
-        title: 'inspector.title',
+        title: '文本属性',
         properties: [
           {
             chain: ['custom_data', 'content'],
@@ -40,12 +42,19 @@ export const textDefinition: WidgetDefinition<TextData> = {
             chain: ['custom_data', 'fontSize'],
             renderer: 'number',
             label: '字号',
+            span: 2,
           },
-          { chain: ['custom_data', 'color'], renderer: 'color', label: '颜色' },
+          {
+            chain: ['custom_data', 'color'],
+            renderer: 'color',
+            label: '颜色',
+            span: 2,
+          },
           {
             chain: ['custom_data', 'align'],
             renderer: 'select',
             label: '对齐',
+            span: 2,
             options: { items: ['left', 'center', 'right'] },
           },
         ],

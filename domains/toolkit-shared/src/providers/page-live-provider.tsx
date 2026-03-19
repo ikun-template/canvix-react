@@ -33,6 +33,7 @@ export function PageLiveProvider({
         pageId: page.id,
         name: page.name,
         layout: page.layout,
+        foreground: page.foreground,
         background: page.background,
         widgetIds: page.widgets.map(w => w.id),
         version,

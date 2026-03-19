@@ -1,0 +1,14 @@
+{
+  "extends": "../../.config/typescript/tsconfig.pkg.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "ignoreDeprecations": "6.0"
+  },
+  "include": ["src"]
+}

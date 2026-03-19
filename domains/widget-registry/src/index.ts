@@ -1,9 +1,9 @@
 export type {
   Chain,
-  InspectorProps,
   PropertyGroup,
   PropertyItem,
   SlotDeclaration,
+  UpdateField,
   WidgetDefinition,
   WidgetInspector,
   WidgetMeta,

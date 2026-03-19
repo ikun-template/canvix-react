@@ -101,7 +101,7 @@ function WidgetEditor({
   const definition = registry.get(widget.type);
   const Component = definition?.render.editor;
 
-  console.debug('[mine] widget render effect');
+  console.debug('[mine] widget render effect', String(widgetId));
 
   return (
     <div

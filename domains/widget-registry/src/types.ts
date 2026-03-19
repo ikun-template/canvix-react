@@ -1,7 +1,9 @@
-import type { WidgetRaw } from '@canvix-react/schema-widget';
+import type { WidgetRaw, WidgetRuntime } from '@canvix-react/schema-widget';
 import type { ComponentType } from 'react';
 
 export type Chain = (string | number)[];
+
+export type UpdateField = (chain: Chain, value: unknown) => void;
 
 export interface WidgetMeta {
   name: string;
@@ -24,6 +26,7 @@ export interface PropertyItem {
   chain: Chain;
   renderer: string;
   label: string;
+  span?: 1 | 2 | 3 | 4;
   options?: Record<string, unknown>;
 }
 
@@ -32,12 +35,8 @@ export interface PropertyGroup {
   properties: PropertyItem[];
 }
 
-export interface InspectorProps {
-  widgetId: string;
-}
-
 export interface WidgetInspector {
-  render: ComponentType<InspectorProps> | PropertyGroup[];
+  render: (data: WidgetRuntime) => PropertyGroup[];
 }
 
 export interface SlotDeclaration {

@@ -1,0 +1,20 @@
+{
+  "name": "@canvix-react/inspector-controls",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@canvix-react/ui-inspector": "workspace:*",
+    "@canvix-react/widget-registry": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19"
+  }
+}

@@ -1,13 +1,19 @@
 :root {
-  --ed-canvas-bg: hsl(var(--muted));
-  --ed-grid-color: hsl(var(--border));
-  --ed-selection: hsl(var(--primary));
-  --ed-selection-bg: hsl(var(--primary) / 0.15);
-  --ed-drag-handle: hsl(var(--accent-foreground));
-  --ed-widget-outline: hsl(var(--ring));
-  --ed-drop-target: hsl(var(--primary) / 0.3);
+  --cvx-canvas-bg: oklch(0.965 0 0);
+  --cvx-grid: oklch(0.922 0 0);
+  --cvx-selection: oklch(0.205 0 0);
+  --cvx-selection-bg: oklch(0.205 0 0 / 0.15);
+  --cvx-drag-handle: oklch(0.205 0 0);
+  --cvx-widget-outline: oklch(0.708 0 0);
+  --cvx-drop-target: oklch(0.205 0 0 / 0.3);
 }
 
 .dark {
-  --ed-canvas-bg: hsl(222 20% 8%);
+  --cvx-canvas-bg: oklch(0.178 0 0);
+  --cvx-grid: oklch(0.269 0 0);
+  --cvx-selection: oklch(0.985 0 0);
+  --cvx-selection-bg: oklch(0.985 0 0 / 0.15);
+  --cvx-drag-handle: oklch(0.985 0 0);
+  --cvx-widget-outline: oklch(0.439 0 0);
+  --cvx-drop-target: oklch(0.985 0 0 / 0.3);
 }

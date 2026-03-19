@@ -1,3 +1,4 @@
+import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
 import type { WidgetDefinition } from '@canvix-react/widget-registry';
 
 import { ShapeEditor } from './editor.js';
@@ -26,5 +27,48 @@ export const shapeDefinition: WidgetDefinition<ShapeData> = {
   render: {
     editor: ShapeEditor,
     viewer: ShapeViewer,
+  },
+  inspector: {
+    render: () => [
+      createBasePropertyGroup(),
+      {
+        title: '形状属性',
+        properties: [
+          {
+            chain: ['custom_data', 'shape'],
+            renderer: 'select',
+            label: '形状',
+            span: 2,
+            options: { items: ['rect', 'circle'] },
+          },
+          {
+            chain: ['custom_data', 'fill'],
+            renderer: 'color',
+            label: '填充',
+            span: 2,
+          },
+          {
+            chain: ['custom_data', 'stroke'],
+            renderer: 'color',
+            label: '描边',
+            span: 2,
+          },
+          {
+            chain: ['custom_data', 'strokeWidth'],
+            renderer: 'number',
+            label: '线宽',
+            span: 2,
+            options: { min: 0 },
+          },
+          {
+            chain: ['custom_data', 'borderRadius'],
+            renderer: 'number',
+            label: '圆角',
+            span: 2,
+            options: { min: 0 },
+          },
+        ],
+      },
+    ],
   },
 };

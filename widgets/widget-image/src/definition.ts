@@ -1,3 +1,4 @@
+import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
 import type { WidgetDefinition } from '@canvix-react/widget-registry';
 
 import { ImageEditor } from './editor.js';
@@ -24,5 +25,29 @@ export const imageDefinition: WidgetDefinition<ImageData> = {
   render: {
     editor: ImageEditor,
     viewer: ImageViewer,
+  },
+  inspector: {
+    render: () => [
+      createBasePropertyGroup(),
+      {
+        title: '图片属性',
+        properties: [
+          { chain: ['custom_data', 'src'], renderer: 'text', label: '地址' },
+          {
+            chain: ['custom_data', 'alt'],
+            renderer: 'text',
+            label: '替代文本',
+            span: 2,
+          },
+          {
+            chain: ['custom_data', 'fit'],
+            renderer: 'select',
+            label: '填充',
+            span: 2,
+            options: { items: ['cover', 'contain', 'fill'] },
+          },
+        ],
+      },
+    ],
   },
 };

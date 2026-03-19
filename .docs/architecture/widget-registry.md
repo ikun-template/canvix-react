@@ -68,8 +68,8 @@ interface WidgetRenderProps<T = unknown> {
 
 ```typescript
 interface WidgetInspector {
-  /** 属性面板渲染组件，或声明式属性组配置 */
-  render: ComponentType<InspectorProps> | PropertyGroup[];
+  /** 接收实例运行时数据，返回属性组配置 */
+  render: (data: WidgetRuntime) => PropertyGroup[];
 }
 
 interface PropertyGroup {

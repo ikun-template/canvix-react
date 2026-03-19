@@ -8,7 +8,9 @@
   "dependencies": {
     "@canvix-react/dock-editor": "workspace:*",
     "@canvix-react/schema-widget": "workspace:*",
-    "@canvix-react/widget-registry": "workspace:*"
+    "@canvix-react/ui": "workspace:*",
+    "@canvix-react/widget-registry": "workspace:*",
+    "lucide-react": "^0.511.0"
   },
   "devDependencies": {
     "@types/react": "^19.2.5",

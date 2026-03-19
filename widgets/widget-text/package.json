@@ -8,6 +8,7 @@
     "./definition": "./src/definition.ts"
   },
   "dependencies": {
+    "@canvix-react/inspector-controls": "workspace:*",
     "@canvix-react/widget-registry": "workspace:*"
   },
   "devDependencies": {

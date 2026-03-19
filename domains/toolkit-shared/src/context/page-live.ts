@@ -4,6 +4,7 @@ export interface PageLiveContextValue {
   pageId: string;
   name: string;
   layout: { size: [number, number] };
+  foreground: string;
   background: string;
   widgetIds: string[];
   version: number;

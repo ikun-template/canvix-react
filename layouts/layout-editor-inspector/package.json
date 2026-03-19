@@ -7,8 +7,10 @@
   },
   "dependencies": {
     "@canvix-react/dock-editor": "workspace:*",
+    "@canvix-react/inspector-controls": "workspace:*",
     "@canvix-react/toolkit-editor": "workspace:*",
     "@canvix-react/toolkit-shared": "workspace:*",
+    "@canvix-react/ui-inspector": "workspace:*",
     "@canvix-react/widget-registry": "workspace:*"
   },
   "devDependencies": {
