@@ -1,0 +1,17 @@
+{
+  "name": "@canvix-react/icon",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "lucide-react": "^0.511.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  }
+}

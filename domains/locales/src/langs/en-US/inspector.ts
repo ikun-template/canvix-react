@@ -1,7 +1,15 @@
 export default {
   'inspector.title': 'Properties',
+  'inspector.page': 'Page Properties',
+  'inspector.name': 'Name',
   'inspector.position': 'Position',
   'inspector.size': 'Size',
+  'inspector.size.width': 'W',
+  'inspector.size.height': 'H',
   'inspector.opacity': 'Opacity',
   'inspector.rotation': 'Rotation',
+  'inspector.color': 'Color',
+  'inspector.color.background': 'Background',
+  'inspector.color.foreground': 'Foreground',
+  'inspector.multi-selection': '{count} widgets selected',
 } as const;

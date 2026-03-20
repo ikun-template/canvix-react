@@ -8,7 +8,7 @@ export type UpdateField = (chain: Chain, value: unknown) => void;
 export interface WidgetMeta {
   name: string;
   category: string;
-  icon: string;
+  icon: ComponentType<{ size?: number; className?: string }>;
   description?: string;
 }
 

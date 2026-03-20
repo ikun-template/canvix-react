@@ -7,10 +7,12 @@
   },
   "dependencies": {
     "@canvix-react/dock-editor": "workspace:*",
+    "@canvix-react/i18n": "workspace:*",
+    "@canvix-react/icon": "workspace:*",
     "@canvix-react/schema-widget": "workspace:*",
+    "@canvix-react/toolkit-editor": "workspace:*",
     "@canvix-react/ui": "workspace:*",
-    "@canvix-react/widget-registry": "workspace:*",
-    "lucide-react": "^0.511.0"
+    "@canvix-react/widget-registry": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.5",

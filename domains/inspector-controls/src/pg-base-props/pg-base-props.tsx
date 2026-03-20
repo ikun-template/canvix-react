@@ -1,3 +1,4 @@
+import { useI18n } from '@canvix-react/i18n';
 import { FieldGroup, FieldRow, NumberInput } from '@canvix-react/ui-inspector';
 
 import { PgPosition } from '../pg-position/index.js';
@@ -17,8 +18,10 @@ interface PgBasePropsProps {
 }
 
 function PgBaseProps({ data, updateField }: PgBasePropsProps) {
+  const { t } = useI18n();
+
   return (
-    <FieldGroup title="基础属性">
+    <FieldGroup title={t('inspector.position')}>
       <PgPosition
         x={data.position.axis[0]}
         y={data.position.axis[1]}
@@ -29,13 +32,13 @@ function PgBaseProps({ data, updateField }: PgBasePropsProps) {
         height={data.layout.size[1]}
         updateField={updateField}
       />
-      <FieldRow label="旋转">
+      <FieldRow label={t('inspector.rotation')}>
         <NumberInput
           value={data.rotation}
           onChange={v => updateField(['rotation'], v)}
         />
       </FieldRow>
-      <FieldRow label="透明度">
+      <FieldRow label={t('inspector.opacity')}>
         <NumberInput
           value={data.opacity}
           onChange={v => updateField(['opacity'], v)}

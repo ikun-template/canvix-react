@@ -6,6 +6,7 @@
 @source "../../../layouts/layout-editor-sidebar/src";
 @source "../../../layouts/layout-editor-inspector/src";
 @source "../../../layouts/layout-editor-canvas/src";
+@source "../../../layouts/layout-editor-settings/src";
 @source "../../../layouts/layout-editor-toolbox/src";
 
 /*
@@ -123,6 +124,10 @@
     font-family:
       -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 14px;
+    user-select: none;
+    touch-action: none;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
   }
 
   /* Remove browser-specific form element chrome */

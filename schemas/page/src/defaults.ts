@@ -10,8 +10,8 @@ export function pageDefaults(input?: PageRaw): PageRuntime {
     layout: {
       size: input?.layout?.size ?? [600, undefined],
     },
-    foreground: input?.foreground ?? '#ffffff',
-    background: input?.background ?? '#efefef',
+    foreground: input?.foreground ?? '#2D2D2D',
+    background: input?.background ?? '#080808',
     widgets: (input?.widgets as PageRuntime['widgets']) ?? [],
   };
 }

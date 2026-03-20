@@ -1,3 +1,4 @@
+import { Square } from '@canvix-react/icon';
 import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
 import type { WidgetDefinition } from '@canvix-react/widget-registry';
 
@@ -12,7 +13,7 @@ export const shapeDefinition: WidgetDefinition<ShapeData> = {
   meta: {
     name: 'widgets.shape',
     category: 'basic',
-    icon: 'square',
+    icon: Square,
   },
   defaultCustomData: {
     shape: 'rect',

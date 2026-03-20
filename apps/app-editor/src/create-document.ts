@@ -17,7 +17,7 @@ export function createDefaultDocument() {
             custom_data: {
               content: 'Hello, Canvix!',
               fontSize: 24,
-              color: '#333',
+              color: '#efefef',
               align: 'center',
             },
           }),

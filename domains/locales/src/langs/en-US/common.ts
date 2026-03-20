@@ -7,4 +7,5 @@ export default {
   'common.duplicate': 'Duplicate',
   'common.undo': 'Undo',
   'common.redo': 'Redo',
+  'common.apply': 'Apply',
 } as const;

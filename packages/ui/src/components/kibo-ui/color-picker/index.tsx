@@ -385,7 +385,7 @@ type PercentageInputProps = ComponentProps<typeof Input>;
 
 const PercentageInput = ({ className, ...props }: PercentageInputProps) => {
   return (
-    <div className="relative">
+    <div className="relative shrink-0">
       <Input
         readOnly
         type="text"
@@ -423,7 +423,7 @@ export const ColorPickerFormat = ({
         {...props}
       >
         <Input
-          className="bg-secondary h-8 rounded-r-none px-2 text-xs shadow-none"
+          className="bg-secondary h-8 min-w-0 flex-1 rounded-r-none px-2 text-xs shadow-none"
           readOnly
           type="text"
           value={hex}

@@ -1,3 +1,4 @@
+import { ImageIcon } from '@canvix-react/icon';
 import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
 import type { WidgetDefinition } from '@canvix-react/widget-registry';
 
@@ -12,7 +13,7 @@ export const imageDefinition: WidgetDefinition<ImageData> = {
   meta: {
     name: 'widgets.image',
     category: 'basic',
-    icon: 'image',
+    icon: ImageIcon,
   },
   defaultCustomData: {
     src: '',

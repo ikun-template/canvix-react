@@ -1,5 +1,8 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { PluginContext, ToolType } from '@canvix-react/dock-editor';
+import { useI18n } from '@canvix-react/i18n';
+import { Hand, MousePointer2, Plus } from '@canvix-react/icon';
 import { widgetDefaults } from '@canvix-react/schema-widget';
+import { useEditorState } from '@canvix-react/toolkit-editor';
 import {
   Button,
   Popover,
@@ -8,41 +11,28 @@ import {
   Separator,
 } from '@canvix-react/ui';
 import type { WidgetDefinition } from '@canvix-react/widget-registry';
-import {
-  Hand,
-  MousePointer2,
-  PenTool,
-  Plus,
-  icons,
-  type LucideIcon,
-} from 'lucide-react';
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 
 interface ToolboxProps {
   ctx: PluginContext;
 }
 
-function getWidgetIcon(name: string): LucideIcon | undefined {
-  const pascal = name.charAt(0).toUpperCase() + name.slice(1);
-  return icons[pascal as keyof typeof icons];
-}
-
-// TODO: 工具切换逻辑待实现，当前仅做 UI 占位
 const TOOLBAR_TOOLS = [
-  { id: 'select', label: '选择', Icon: MousePointer2 },
-  { id: 'hand', label: '抓手', Icon: Hand },
-  { id: 'pen', label: '钢笔', Icon: PenTool },
+  {
+    id: 'select' as ToolType,
+    labelKey: 'toolbox.tool.select',
+    Icon: MousePointer2,
+  },
+  { id: 'hand' as ToolType, labelKey: 'toolbox.tool.hand', Icon: Hand },
 ] as const;
 
 export function Toolbox({ ctx }: ToolboxProps) {
+  const { t } = useI18n();
   const definitions = ctx.registry.getAll();
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [activeTool, setActiveTool] = useState<string>('select');
 
-  const snapshot = useSyncExternalStore(
-    ctx.editorState.onChange,
-    ctx.editorState.getSnapshot,
-  );
+  const snapshot = useEditorState(ctx.editorState);
+  const activeTool = snapshot.activeTool;
 
   function addWidget(def: WidgetDefinition) {
     const pageId = snapshot.activePageId;
@@ -71,20 +61,18 @@ export function Toolbox({ ctx }: ToolboxProps) {
         },
       ],
     });
-
-    setPopoverOpen(false);
   }
 
   return (
-    <div className="bg-background/80 pointer-events-auto flex items-center gap-0.5 rounded-xl border px-1 py-1 shadow-md backdrop-blur">
-      {TOOLBAR_TOOLS.map(({ id, label, Icon }) => (
+    <div className="bg-background/80 border-border pointer-events-auto flex items-center gap-0.5 rounded-xl border px-1 py-1 shadow-md backdrop-blur">
+      {TOOLBAR_TOOLS.map(({ id, labelKey, Icon }) => (
         <Button
           key={id}
           variant="ghost"
           size="icon"
           className={`h-8 w-8 ${activeTool === id ? 'bg-accent text-accent-foreground' : ''}`}
-          title={label}
-          onClick={() => setActiveTool(id)}
+          title={t(labelKey)}
+          onClick={() => ctx.editorState.setActiveTool(id)}
         >
           <Icon size={16} />
         </Button>
@@ -98,7 +86,7 @@ export function Toolbox({ ctx }: ToolboxProps) {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            title="添加组件"
+            title={t('toolbox.add')}
           >
             <Plus size={16} />
           </Button>
@@ -106,18 +94,14 @@ export function Toolbox({ ctx }: ToolboxProps) {
         <PopoverContent side="top" className="w-auto p-2" sideOffset={8}>
           <div className="grid grid-cols-3 gap-1">
             {definitions.map(def => {
-              const Icon = getWidgetIcon(def.meta.icon);
+              const Icon = def.meta.icon;
               return (
                 <button
                   key={def.type}
                   onClick={() => addWidget(def)}
                   className="hover:bg-accent flex flex-col items-center gap-1 rounded-lg p-2 text-xs transition-colors"
                 >
-                  {Icon ? (
-                    <Icon size={20} />
-                  ) : (
-                    <span className="text-base">?</span>
-                  )}
+                  <Icon size={20} />
                   <span>{def.meta.name}</span>
                 </button>
               );

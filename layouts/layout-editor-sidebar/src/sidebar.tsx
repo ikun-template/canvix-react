@@ -1,53 +1,74 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
-import type { OperationModel } from '@canvix-react/toolkit-editor';
-import { useChronicleSelective } from '@canvix-react/toolkit-editor';
-import { useSyncExternalStore } from 'react';
+import { useI18n } from '@canvix-react/i18n';
+import { Plus } from '@canvix-react/icon';
+import { pageDefaults } from '@canvix-react/schema-page';
+import { useCallback, useRef } from 'react';
+
+import { PageExplorer } from './page-explorer.js';
+import { useResizeHandle } from './use-resize-handle.js';
+import { WidgetExplorer } from './widget-explorer.js';
 
 interface SidebarProps {
   ctx: PluginContext;
 }
 
-const shouldUpdate = (model: OperationModel) => {
-  if (model.target === 'document') return true;
-  if (model.target === 'page') {
-    return model.operations.some(op => op.chain[0] === 'name');
-  }
-  return false;
-};
-
 export function Sidebar({ ctx }: SidebarProps) {
-  const snapshot = useSyncExternalStore(
-    ctx.editorState.onChange,
-    ctx.editorState.getSnapshot,
-  );
+  const { t } = useI18n();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { topHeight, handleProps } = useResizeHandle({ containerRef });
 
-  const doc = useChronicleSelective(shouldUpdate);
-  const pages = doc.pages;
-
-  console.debug('[mine] sidebar render effect');
+  const addPage = useCallback(() => {
+    const doc = ctx.chronicle.getDocument();
+    const page = pageDefaults({ name: `Page ${doc.pages.length + 1}` });
+    ctx.update({
+      target: 'document',
+      operations: [
+        {
+          kind: 'array:insert',
+          chain: ['pages'],
+          index: doc.pages.length,
+          value: page,
+        },
+      ],
+    });
+    ctx.editorState.setActivePage(page.id);
+  }, [ctx]);
 
   return (
-    <div style={{ padding: 12 }}>
-      <h4 style={{ marginBottom: 8 }}>Pages</h4>
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {pages.map(page => (
-          <li
-            key={page.id}
-            onClick={() => ctx.editorState.setActivePage(page.id)}
-            style={{
-              padding: '6px 8px',
-              borderRadius: 4,
-              cursor: 'pointer',
-              background:
-                snapshot.activePageId === page.id ? '#e8f0fe' : 'transparent',
-              fontWeight: snapshot.activePageId === page.id ? 600 : 400,
-              marginBottom: 2,
-            }}
+    <div ref={containerRef} className="flex h-full flex-col overflow-hidden">
+      {/* Page explorer */}
+      <div className="flex shrink-0 flex-col" style={{ height: topHeight }}>
+        <div className="flex h-9 shrink-0 items-center justify-between px-3">
+          <h4 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+            {t('sidebar.pages.title')}
+          </h4>
+          <button
+            onClick={addPage}
+            className="text-muted-foreground hover:text-foreground rounded p-0.5 transition-colors"
+            title={t('sidebar.pages.add')}
           >
-            {page.name || page.id}
-          </li>
-        ))}
-      </ul>
+            <Plus size={14} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto px-2">
+          <PageExplorer ctx={ctx} />
+        </div>
+      </div>
+
+      {/* Resize handle */}
+      <div {...handleProps} />
+
+      {/* Widget explorer */}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex h-9 shrink-0 items-center px-3">
+          <h4 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+            {t('sidebar.widgets.title')}
+          </h4>
+        </div>
+        <div className="flex-1 overflow-y-auto px-2">
+          <WidgetExplorer ctx={ctx} />
+        </div>
+      </div>
     </div>
   );
 }

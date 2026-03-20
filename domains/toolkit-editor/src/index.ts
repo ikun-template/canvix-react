@@ -8,6 +8,7 @@ export {
 
 // Editor hooks
 export { useDocumentEditor } from './hooks/use-document-editor.js';
+export { useEditorState } from './hooks/use-editor-state.js';
 export { usePageEditor } from './hooks/use-page-editor.js';
 export { useWidgetEditor } from './hooks/use-widget-editor.js';
 

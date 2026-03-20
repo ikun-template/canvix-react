@@ -99,12 +99,19 @@ export function InspectorColorPickerProvider({
               key={pickerKey}
               defaultValue={target.value}
               onChange={handleChange}
+              className="gap-3"
             >
               <ColorPickerSelection className="h-32 rounded-md" />
-              <ColorPickerHue />
-              <ColorPickerAlpha />
+              <div className="flex gap-2">
+                <div className="flex shrink-0 items-center">
+                  <ColorPickerEyeDropper className="size-8" />
+                </div>
+                <div className="flex flex-1 flex-col justify-between">
+                  <ColorPickerHue />
+                  <ColorPickerAlpha />
+                </div>
+              </div>
               <div className="flex items-center gap-2">
-                <ColorPickerEyeDropper className="size-8" />
                 <ColorPickerOutput className="h-7 w-16 text-xs" />
                 <ColorPickerFormat className="flex-1" />
               </div>

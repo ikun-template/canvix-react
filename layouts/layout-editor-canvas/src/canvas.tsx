@@ -1,8 +1,11 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
-import { useChronicleSelective } from '@canvix-react/toolkit-editor';
+import {
+  useChronicleSelective,
+  useEditorState,
+} from '@canvix-react/toolkit-editor';
 import { PageLiveProvider } from '@canvix-react/toolkit-shared';
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback } from 'react';
 
 import { PageEditor } from './page-editor.js';
 
@@ -11,10 +14,7 @@ interface CanvasProps {
 }
 
 export function Canvas({ ctx }: CanvasProps) {
-  const snapshot = useSyncExternalStore(
-    ctx.editorState.onChange,
-    ctx.editorState.getSnapshot,
-  );
+  const snapshot = useEditorState(ctx.editorState);
 
   const activePageId = snapshot.activePageId;
 
@@ -84,7 +84,11 @@ export function Canvas({ ctx }: CanvasProps) {
           margin: '0 auto',
         }}
       >
-        <PageLiveProvider pageId={page.id} subscribe={subscribePage}>
+        <PageLiveProvider
+          key={page.id}
+          pageId={page.id}
+          subscribe={subscribePage}
+        >
           <PageEditor ctx={ctx} registry={ctx.registry} />
         </PageLiveProvider>
       </div>

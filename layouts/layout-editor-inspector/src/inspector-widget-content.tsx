@@ -45,16 +45,28 @@ export function InspectorWidgetContent({
     [definition, widget, version],
   );
 
+  const Icon = definition?.meta.icon;
+
   return (
-    <div className="p-3">
-      <h4 className="mb-2 text-sm font-medium">{widget.name || widget.type}</h4>
-      {groups.length > 0 && (
-        <PropertyRenderer
-          groups={groups}
-          widgetData={widget as unknown as Record<string, unknown>}
-          updateField={updateField}
-        />
-      )}
+    <div className="flex h-full flex-col">
+      <div className="border-border flex h-9 shrink-0 items-center gap-2 border-b px-3">
+        {Icon && <Icon size={14} className="text-muted-foreground" />}
+        <span className="text-sm font-medium">
+          {widget.name || widget.type}
+        </span>
+        <span className="bg-muted text-muted-foreground rounded px-1.5 py-0.5 text-[10px]">
+          {widget.type}
+        </span>
+      </div>
+      <div className="overflow-y-auto px-3 py-2">
+        {groups.length > 0 && (
+          <PropertyRenderer
+            groups={groups}
+            widgetData={widget as unknown as Record<string, unknown>}
+            updateField={updateField}
+          />
+        )}
+      </div>
     </div>
   );
 }

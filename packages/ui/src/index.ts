@@ -1,5 +1,17 @@
 export { Button, buttonVariants } from './components/button.js';
 export {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
+} from './components/dialog.js';
+export {
   ColorPicker,
   ColorPickerAlpha,
   ColorPickerEyeDropper,
@@ -24,6 +36,7 @@ export {
   SelectValue,
 } from './components/select.js';
 export { Separator } from './components/separator.js';
+export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/tabs.js';
 export {
   ContextMenu,
   ContextMenuCheckboxItem,

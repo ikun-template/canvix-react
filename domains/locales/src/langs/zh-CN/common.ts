@@ -7,4 +7,5 @@ export default {
   'common.duplicate': '复制',
   'common.undo': '撤销',
   'common.redo': '重做',
+  'common.apply': '应用',
 } as const;

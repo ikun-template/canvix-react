@@ -1,6 +1,7 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
+import { useI18n } from '@canvix-react/i18n';
+import { useEditorState } from '@canvix-react/toolkit-editor';
 import { InspectorColorPickerProvider } from '@canvix-react/ui-inspector';
-import { useSyncExternalStore } from 'react';
 
 import { InspectorPage } from './inspector-page.js';
 import { InspectorWidget } from './inspector-widget.js';
@@ -10,10 +11,7 @@ interface InspectorProps {
 }
 
 export function Inspector({ ctx }: InspectorProps) {
-  const snapshot = useSyncExternalStore(
-    ctx.editorState.onChange,
-    ctx.editorState.getSnapshot,
-  );
+  const snapshot = useEditorState(ctx.editorState);
 
   const selected = snapshot.selectedWidgetIds;
   const pageId = snapshot.activePageId;
@@ -38,10 +36,15 @@ function InspectorContent({
     return <InspectorPage ctx={ctx} pageId={pageId} />;
   }
 
+  const { t } = useI18n();
+
   if (selected.length > 1) {
     return (
-      <div className="text-muted-foreground p-3 text-sm">
-        已选中 {selected.length} 个组件
+      <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-1 text-sm">
+        <span className="text-2xl">⬡</span>
+        <span>
+          {t('inspector.multi-selection', { count: selected.length })}
+        </span>
       </div>
     );
   }

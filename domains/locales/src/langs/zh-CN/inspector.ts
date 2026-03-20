@@ -1,7 +1,15 @@
 export default {
   'inspector.title': '属性',
+  'inspector.page': '页面属性',
+  'inspector.name': '名称',
   'inspector.position': '位置',
   'inspector.size': '尺寸',
+  'inspector.size.width': '宽',
+  'inspector.size.height': '高',
   'inspector.opacity': '透明度',
   'inspector.rotation': '旋转',
+  'inspector.color': '颜色',
+  'inspector.color.background': '背景',
+  'inspector.color.foreground': '前景',
+  'inspector.multi-selection': '已选中 {count} 个组件',
 } as const;

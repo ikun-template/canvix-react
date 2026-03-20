@@ -1,10 +1,14 @@
 type StateListener = () => void;
 
+export type ToolType = 'select' | 'hand';
+
 export interface EditorStateSnapshot {
   activePageId: string;
   selectedWidgetIds: string[];
   zoom: number;
   scroll: { x: number; y: number };
+  activeTool: ToolType;
+  interacting: boolean;
 }
 
 export class EditorState {
@@ -12,6 +16,8 @@ export class EditorState {
   private _selectedWidgetIds: string[] = [];
   private _zoom = 1;
   private _scroll = { x: 0, y: 0 };
+  private _activeTool: ToolType = 'select';
+  private _interacting = false;
   private _snapshot: EditorStateSnapshot | null = null;
   private listeners = new Set<StateListener>();
 
@@ -29,6 +35,14 @@ export class EditorState {
 
   get scroll() {
     return this._scroll;
+  }
+
+  get activeTool() {
+    return this._activeTool;
+  }
+
+  get interacting() {
+    return this._interacting;
   }
 
   setActivePage(pageId: string) {
@@ -52,6 +66,16 @@ export class EditorState {
     this.notify();
   }
 
+  setActiveTool(tool: ToolType) {
+    this._activeTool = tool;
+    this.notify();
+  }
+
+  setInteracting(value: boolean) {
+    this._interacting = value;
+    this.notify();
+  }
+
   /** Returns a cached snapshot; same reference until state changes. */
   getSnapshot = (): EditorStateSnapshot => {
     if (!this._snapshot) {
@@ -60,6 +84,8 @@ export class EditorState {
         selectedWidgetIds: this._selectedWidgetIds,
         zoom: this._zoom,
         scroll: this._scroll,
+        activeTool: this._activeTool,
+        interacting: this._interacting,
       };
     }
     return this._snapshot;

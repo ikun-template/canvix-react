@@ -26,18 +26,30 @@ importers:
       '@canvix-react/dock-editor':
         specifier: workspace:*
         version: link:../../docks/dock-editor
+      '@canvix-react/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      '@canvix-react/icon':
+        specifier: workspace:*
+        version: link:../../domains/icon
       '@canvix-react/layout-editor-canvas':
         specifier: workspace:*
         version: link:../../layouts/layout-editor-canvas
       '@canvix-react/layout-editor-inspector':
         specifier: workspace:*
         version: link:../../layouts/layout-editor-inspector
+      '@canvix-react/layout-editor-settings':
+        specifier: workspace:*
+        version: link:../../layouts/layout-editor-settings
       '@canvix-react/layout-editor-sidebar':
         specifier: workspace:*
         version: link:../../layouts/layout-editor-sidebar
       '@canvix-react/layout-editor-toolbox':
         specifier: workspace:*
         version: link:../../layouts/layout-editor-toolbox
+      '@canvix-react/locales':
+        specifier: workspace:*
+        version: link:../../domains/locales
       '@canvix-react/schema-document':
         specifier: workspace:*
         version: link:../../schemas/document
@@ -47,6 +59,9 @@ importers:
       '@canvix-react/schema-widget':
         specifier: workspace:*
         version: link:../../schemas/widget
+      '@canvix-react/theme':
+        specifier: workspace:*
+        version: link:../../domains/theme
       '@canvix-react/toolkit-editor':
         specifier: workspace:*
         version: link:../../domains/toolkit-editor
@@ -195,8 +210,24 @@ importers:
         specifier: workspace:*
         version: link:../../schemas/widget
 
+  domains/icon:
+    dependencies:
+      lucide-react:
+        specifier: ^0.511.0
+        version: 0.511.0(react@19.2.4)
+      react:
+        specifier: '>=19'
+        version: 19.2.4
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.5
+        version: 19.2.13
+
   domains/inspector-controls:
     dependencies:
+      '@canvix-react/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@canvix-react/ui-inspector':
         specifier: workspace:*
         version: link:../ui-inspector
@@ -380,6 +411,9 @@ importers:
       '@canvix-react/dock-editor':
         specifier: workspace:*
         version: link:../../docks/dock-editor
+      '@canvix-react/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@canvix-react/inspector-controls':
         specifier: workspace:*
         version: link:../../domains/inspector-controls
@@ -409,14 +443,51 @@ importers:
         specifier: ^19.2.3
         version: 19.2.3(@types/react@19.2.13)
 
+  layouts/layout-editor-settings:
+    dependencies:
+      '@canvix-react/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      '@canvix-react/theme':
+        specifier: workspace:*
+        version: link:../../domains/theme
+      '@canvix-react/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      react:
+        specifier: '>=19'
+        version: 19.2.4
+      react-dom:
+        specifier: '>=19'
+        version: 19.2.4(react@19.2.4)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.5
+        version: 19.2.13
+      '@types/react-dom':
+        specifier: ^19.2.3
+        version: 19.2.3(@types/react@19.2.13)
+
   layouts/layout-editor-sidebar:
     dependencies:
       '@canvix-react/dock-editor':
         specifier: workspace:*
         version: link:../../docks/dock-editor
+      '@canvix-react/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      '@canvix-react/icon':
+        specifier: workspace:*
+        version: link:../../domains/icon
+      '@canvix-react/schema-page':
+        specifier: workspace:*
+        version: link:../../schemas/page
       '@canvix-react/toolkit-editor':
         specifier: workspace:*
         version: link:../../domains/toolkit-editor
+      '@canvix-react/widget-registry':
+        specifier: workspace:*
+        version: link:../../domains/widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -436,18 +507,24 @@ importers:
       '@canvix-react/dock-editor':
         specifier: workspace:*
         version: link:../../docks/dock-editor
+      '@canvix-react/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      '@canvix-react/icon':
+        specifier: workspace:*
+        version: link:../../domains/icon
       '@canvix-react/schema-widget':
         specifier: workspace:*
         version: link:../../schemas/widget
+      '@canvix-react/toolkit-editor':
+        specifier: workspace:*
+        version: link:../../domains/toolkit-editor
       '@canvix-react/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@canvix-react/widget-registry':
         specifier: workspace:*
         version: link:../../domains/widget-registry
-      lucide-react:
-        specifier: ^0.511.0
-        version: 0.511.0(react@19.2.4)
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -558,6 +635,9 @@ importers:
 
   widgets/widget-image:
     dependencies:
+      '@canvix-react/icon':
+        specifier: workspace:*
+        version: link:../../domains/icon
       '@canvix-react/inspector-controls':
         specifier: workspace:*
         version: link:../../domains/inspector-controls
@@ -574,6 +654,9 @@ importers:
 
   widgets/widget-shape:
     dependencies:
+      '@canvix-react/icon':
+        specifier: workspace:*
+        version: link:../../domains/icon
       '@canvix-react/inspector-controls':
         specifier: workspace:*
         version: link:../../domains/inspector-controls
@@ -590,6 +673,9 @@ importers:
 
   widgets/widget-text:
     dependencies:
+      '@canvix-react/icon':
+        specifier: workspace:*
+        version: link:../../domains/icon
       '@canvix-react/inspector-controls':
         specifier: workspace:*
         version: link:../../domains/inspector-controls

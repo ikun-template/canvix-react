@@ -7,3 +7,8 @@ export type {
   PluginDefinition,
   PluginInstance,
 } from './runtime/types.js';
+export type {
+  EditorState,
+  EditorStateSnapshot,
+  ToolType,
+} from './runtime/editor-state.js';

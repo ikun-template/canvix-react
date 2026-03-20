@@ -1,3 +1,4 @@
+import { Type } from '@canvix-react/icon';
 import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
 import type { WidgetDefinition } from '@canvix-react/widget-registry';
 
@@ -12,7 +13,7 @@ export const textDefinition: WidgetDefinition<TextData> = {
   meta: {
     name: 'widgets.text',
     category: 'basic',
-    icon: 'type',
+    icon: Type,
   },
   defaultCustomData: {
     content: '文本内容',

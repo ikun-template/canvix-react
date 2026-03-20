@@ -20,5 +20,7 @@ export function useI18n() {
   return {
     t: manager.t,
     locale,
+    setLocale: manager.setLocale,
+    supportedLocales: manager.getSupportedLocales(),
   };
 }

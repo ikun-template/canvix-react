@@ -1,0 +1,21 @@
+{
+  "name": "@canvix-react/layout-editor-settings",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@canvix-react/i18n": "workspace:*",
+    "@canvix-react/theme": "workspace:*",
+    "@canvix-react/ui": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19"
+  }
+}
