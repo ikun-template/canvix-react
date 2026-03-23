@@ -1,10 +1,10 @@
 import type { DocumentRuntime } from '@canvix-react/schema-document';
 import { useEffect, useReducer } from 'react';
 
-import { useEditor } from '../context/editor.js';
+import { useEditorRef } from '../context/editor-ref.js';
 
 export function useChronicleData(): Readonly<DocumentRuntime> {
-  const { chronicle } = useEditor();
+  const { chronicle } = useEditorRef();
   const [, forceUpdate] = useReducer((c: number) => c + 1, 0);
 
   useEffect(() => {

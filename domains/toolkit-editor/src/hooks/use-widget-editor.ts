@@ -1,10 +1,10 @@
 import type { WidgetRuntime, WidgetRaw } from '@canvix-react/schema-widget';
 import { useDocumentRef, useWidget } from '@canvix-react/toolkit-shared';
 
-import { useEditor } from '../context/editor.js';
+import { useEditorRef } from '../context/editor-ref.js';
 
 export function useWidgetEditor() {
-  const { chronicle } = useEditor();
+  const { chronicle } = useEditorRef();
   const { getDocument } = useDocumentRef();
   const { widgetId, pageId } = useWidget();
 

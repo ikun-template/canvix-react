@@ -2,10 +2,10 @@ import type { PageRuntime } from '@canvix-react/schema-page';
 import type { WidgetRaw } from '@canvix-react/schema-widget';
 import { useDocumentRef, usePage } from '@canvix-react/toolkit-shared';
 
-import { useEditor } from '../context/editor.js';
+import { useEditorRef } from '../context/editor-ref.js';
 
 export function usePageEditor() {
-  const { chronicle } = useEditor();
+  const { chronicle } = useEditorRef();
   const { getDocument } = useDocumentRef();
   const { pageId } = usePage();
 

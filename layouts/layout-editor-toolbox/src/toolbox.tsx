@@ -1,8 +1,7 @@
 import type { PluginContext, ToolType } from '@canvix-react/dock-editor';
-import { useI18n } from '@canvix-react/i18n';
 import { Hand, MousePointer2, Plus } from '@canvix-react/icon';
 import { widgetDefaults } from '@canvix-react/schema-widget';
-import { useEditorState } from '@canvix-react/toolkit-editor';
+import { useEditorLive, useI18n } from '@canvix-react/toolkit-editor';
 import {
   Button,
   Popover,
@@ -31,7 +30,7 @@ export function Toolbox({ ctx }: ToolboxProps) {
   const definitions = ctx.registry.getAll();
   const [popoverOpen, setPopoverOpen] = useState(false);
 
-  const snapshot = useEditorState(ctx.editorState);
+  const snapshot = useEditorLive();
   const activeTool = snapshot.activeTool;
 
   function addWidget(def: WidgetDefinition) {

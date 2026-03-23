@@ -2,7 +2,7 @@ import type { PluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import {
   useChronicleSelective,
-  useEditorState,
+  useEditorLive,
 } from '@canvix-react/toolkit-editor';
 import { PageLiveProvider } from '@canvix-react/toolkit-shared';
 import { useCallback } from 'react';
@@ -14,9 +14,7 @@ interface CanvasProps {
 }
 
 export function Canvas({ ctx }: CanvasProps) {
-  const snapshot = useEditorState(ctx.editorState);
-
-  const activePageId = snapshot.activePageId;
+  const { activePageId } = useEditorLive();
 
   const shouldUpdate = useCallback(
     (model: OperationModel) => {

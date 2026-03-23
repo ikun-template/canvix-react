@@ -1,9 +1,9 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
-import { useI18n } from '@canvix-react/i18n';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import {
   useChronicleSelective,
-  useEditorState,
+  useEditorLive,
+  useI18n,
 } from '@canvix-react/toolkit-editor';
 
 interface WidgetExplorerProps {
@@ -23,7 +23,7 @@ const shouldUpdate = (model: OperationModel) => {
 
 export function WidgetExplorer({ ctx }: WidgetExplorerProps) {
   const { t } = useI18n();
-  const snapshot = useEditorState(ctx.editorState);
+  const snapshot = useEditorLive();
 
   const doc = useChronicleSelective(shouldUpdate);
   const page = doc.pages.find(p => p.id === snapshot.activePageId);

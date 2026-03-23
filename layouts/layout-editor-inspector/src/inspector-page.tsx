@@ -1,6 +1,6 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
-import { useI18n } from '@canvix-react/i18n';
 import { PiColor, PiNumber, PiText } from '@canvix-react/inspector-controls';
+import { useI18n } from '@canvix-react/toolkit-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import { PageLiveProvider, usePageLive } from '@canvix-react/toolkit-shared';
 import { FieldGroup } from '@canvix-react/ui-inspector';

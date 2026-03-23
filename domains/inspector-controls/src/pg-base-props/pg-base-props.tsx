@@ -1,4 +1,4 @@
-import { useI18n } from '@canvix-react/i18n';
+import { useI18n } from '@canvix-react/toolkit-editor';
 import { FieldGroup, FieldRow, NumberInput } from '@canvix-react/ui-inspector';
 
 import { PgPosition } from '../pg-position/index.js';

@@ -1,7 +1,7 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
-import { useI18n } from '@canvix-react/i18n';
 import { Plus } from '@canvix-react/icon';
 import { pageDefaults } from '@canvix-react/schema-page';
+import { useI18n } from '@canvix-react/toolkit-editor';
 import { useCallback, useRef } from 'react';
 
 import { PageExplorer } from './page-explorer.js';

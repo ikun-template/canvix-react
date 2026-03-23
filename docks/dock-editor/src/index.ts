@@ -12,3 +12,4 @@ export type {
   EditorStateSnapshot,
   ToolType,
 } from './runtime/editor-state.js';
+export type { TempSession } from './runtime/temp-session.js';

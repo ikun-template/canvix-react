@@ -1,4 +1,4 @@
-import { useI18n } from '@canvix-react/i18n';
+import { useI18n } from '@canvix-react/toolkit-editor';
 import { FieldRow, NumberInput } from '@canvix-react/ui-inspector';
 
 import type { UpdateField } from '../types.js';

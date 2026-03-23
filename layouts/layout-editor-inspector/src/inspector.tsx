@@ -1,6 +1,5 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
-import { useI18n } from '@canvix-react/i18n';
-import { useEditorState } from '@canvix-react/toolkit-editor';
+import { useEditorLive, useI18n } from '@canvix-react/toolkit-editor';
 import { InspectorColorPickerProvider } from '@canvix-react/ui-inspector';
 
 import { InspectorPage } from './inspector-page.js';
@@ -11,10 +10,7 @@ interface InspectorProps {
 }
 
 export function Inspector({ ctx }: InspectorProps) {
-  const snapshot = useEditorState(ctx.editorState);
-
-  const selected = snapshot.selectedWidgetIds;
-  const pageId = snapshot.activePageId;
+  const { selectedWidgetIds: selected, activePageId: pageId } = useEditorLive();
 
   return (
     <InspectorColorPickerProvider>

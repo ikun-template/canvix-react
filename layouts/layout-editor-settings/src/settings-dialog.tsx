@@ -1,5 +1,4 @@
-import { useI18n } from '@canvix-react/i18n';
-import { useTheme } from '@canvix-react/theme';
+import { useI18n, useTheme } from '@canvix-react/toolkit-editor';
 import {
   Button,
   Dialog,

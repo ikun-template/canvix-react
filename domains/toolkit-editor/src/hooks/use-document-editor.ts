@@ -2,10 +2,10 @@ import type { DocumentRuntime } from '@canvix-react/schema-document';
 import type { PageRaw } from '@canvix-react/schema-page';
 import { useDocumentRef } from '@canvix-react/toolkit-shared';
 
-import { useEditor } from '../context/editor.js';
+import { useEditorRef } from '../context/editor-ref.js';
 
 export function useDocumentEditor() {
-  const { chronicle } = useEditor();
+  const { chronicle } = useEditorRef();
   const { getDocument } = useDocumentRef();
 
   return {

@@ -1,13 +1,19 @@
 import type { PluginDefinition } from '@canvix-react/dock-editor';
-import { createI18nManager, I18nProvider } from '@canvix-react/i18n';
+import { createI18nManager } from '@canvix-react/i18n';
 import { canvasPlugin } from '@canvix-react/layout-editor-canvas';
 import { inspectorPlugin } from '@canvix-react/layout-editor-inspector';
 import { initSettingsFromStorage } from '@canvix-react/layout-editor-settings';
 import { sidebarPlugin } from '@canvix-react/layout-editor-sidebar';
 import { toolboxPlugin } from '@canvix-react/layout-editor-toolbox';
 import { editorMessages } from '@canvix-react/locales';
-import { createThemeManager, ThemeProvider } from '@canvix-react/theme';
-import { EditorProvider } from '@canvix-react/toolkit-editor';
+import { createThemeManager } from '@canvix-react/theme';
+import {
+  EditorConfigProvider,
+  type EditorConfigContextValue,
+  EditorLiveProvider,
+  EditorRefProvider,
+  type EditorRefContextValue,
+} from '@canvix-react/toolkit-editor';
 import {
   DocumentRefProvider,
   DocumentLiveProvider,
@@ -39,6 +45,13 @@ const plugins: PluginDefinition[] = [
   toolboxPlugin,
 ];
 
+const pluginMetas = plugins.map(p => ({ name: p.name, slot: p.slot }));
+
+const editorConfigValue: EditorConfigContextValue = {
+  i18n: i18nManager,
+  theme: themeManager,
+};
+
 export default function App() {
   const [i18nLoaded, setI18nLoaded] = useState(false);
 
@@ -59,8 +72,18 @@ export default function App() {
     [ctx],
   );
 
-  const editorCtxValue = useMemo(
-    () => (ctx ? { chronicle: ctx.chronicle } : null),
+  const editorRefValue = useMemo<EditorRefContextValue | null>(
+    () =>
+      ctx
+        ? {
+            chronicle: ctx.chronicle,
+            editorState: ctx.editorState,
+            registry: ctx.registry,
+            plugins: pluginMetas,
+            update: ctx.update,
+            beginTemp: ctx.beginTemp,
+          }
+        : null,
     [ctx],
   );
 
@@ -75,13 +98,13 @@ export default function App() {
   if (!i18nLoaded) return null;
 
   return (
-    <I18nProvider value={i18nManager}>
-      <ThemeProvider value={themeManager}>
-        {state.phase === 'loading' && <EditorLoading state={state} />}
-        <EditorShell ref={shellRef} hidden={state.phase === 'loading'} />
-        {ctx && docRefValue && editorCtxValue && container && (
+    <EditorConfigProvider value={editorConfigValue}>
+      {state.phase === 'loading' && <EditorLoading state={state} />}
+      <EditorShell ref={shellRef} hidden={state.phase === 'loading'} />
+      {ctx && docRefValue && editorRefValue && container && (
+        <EditorRefProvider value={editorRefValue}>
           <DocumentRefProvider value={docRefValue}>
-            <EditorProvider value={editorCtxValue}>
+            <EditorLiveProvider>
               <DocumentLiveProvider subscribe={subscribeDocument}>
                 {plugins.map(p => {
                   if (!p.slot || !p.component) return null;
@@ -99,10 +122,10 @@ export default function App() {
                   );
                 })}
               </DocumentLiveProvider>
-            </EditorProvider>
+            </EditorLiveProvider>
           </DocumentRefProvider>
-        )}
-      </ThemeProvider>
-    </I18nProvider>
+        </EditorRefProvider>
+      )}
+    </EditorConfigProvider>
   );
 }

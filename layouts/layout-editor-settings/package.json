@@ -6,8 +6,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@canvix-react/i18n": "workspace:*",
-    "@canvix-react/theme": "workspace:*",
+    "@canvix-react/toolkit-editor": "workspace:*",
     "@canvix-react/ui": "workspace:*"
   },
   "devDependencies": {

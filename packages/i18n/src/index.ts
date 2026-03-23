@@ -6,4 +6,3 @@ export {
   type MessageLoader,
   type MessageLoaders,
 } from './manager.js';
-export { I18nProvider, useI18n } from './react.js';

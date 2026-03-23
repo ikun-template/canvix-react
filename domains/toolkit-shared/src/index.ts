@@ -6,21 +6,16 @@ export {
   type DocumentRefContextValue,
 } from './context/document-ref.js';
 export {
-  DocumentLiveContext,
-  DocumentLiveProvider as DocumentLiveContextProvider,
-  useDocument,
   useDocumentLive,
   type DocumentLiveContextValue,
 } from './context/document-live.js';
 export {
-  PageLiveContext,
   PageProvider,
   usePage,
   usePageLive,
   type PageLiveContextValue,
 } from './context/page-live.js';
 export {
-  WidgetLiveContext,
   WidgetProvider,
   useWidget,
   useWidgetLive,

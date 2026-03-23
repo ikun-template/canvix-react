@@ -1,4 +1,4 @@
-import { useI18n } from '@canvix-react/i18n';
+import { useI18n } from '@canvix-react/toolkit-editor';
 
 import type { BootstrapState } from './use-editor-bootstrap.js';
 
