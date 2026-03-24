@@ -10,8 +10,8 @@ interface PgPositionProps {
 
 function PgPosition({ x, y, updateField }: PgPositionProps) {
   return (
-    <div className="flex gap-1">
-      <div className="flex-1">
+    <div className="flex gap-2">
+      <div className="min-w-0 flex-1">
         <FieldRow label="X">
           <NumberInput
             value={x}
@@ -19,7 +19,7 @@ function PgPosition({ x, y, updateField }: PgPositionProps) {
           />
         </FieldRow>
       </div>
-      <div className="flex-1">
+      <div className="min-w-0 flex-1">
         <FieldRow label="Y">
           <NumberInput
             value={y}

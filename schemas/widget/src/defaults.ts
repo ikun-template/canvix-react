@@ -16,6 +16,7 @@ export function widgetDefaults<T = unknown>(
     },
     layout: {
       size: input?.layout?.size ?? [300, 200],
+      padding: input?.layout?.padding ?? [0, 0, 0, 0],
     },
     rotation: input?.rotation ?? 0,
     hide: input?.hide ?? false,

@@ -14,6 +14,12 @@ export function createBasePropertyGroup(): PropertyGroup {
         span: 2,
         options: { step: 0.1, min: 0, max: 1 },
       },
+      {
+        chain: ['layout', 'padding'],
+        renderer: 'padding',
+        label: '内边距',
+        span: 4,
+      },
     ],
   };
 }

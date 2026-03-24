@@ -1,5 +1,11 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
-import { PiColor, PiNumber, PiText } from '@canvix-react/inspector-controls';
+import {
+  PiColor,
+  PiNumber,
+  PiPadding,
+  PiSelect,
+  PiText,
+} from '@canvix-react/inspector-controls';
 import { useI18n } from '@canvix-react/toolkit-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import { PageLiveProvider, usePageLive } from '@canvix-react/toolkit-shared';
@@ -55,7 +61,7 @@ function InspectorPageContent({
           {t('inspector.page')}
         </h4>
       </div>
-      <div className="overflow-y-auto px-3 py-2">
+      <div className="min-w-0 overflow-x-hidden overflow-y-auto px-3 py-2">
         <div className="mb-3">
           <PiText
             label={t('inspector.name')}
@@ -65,8 +71,8 @@ function InspectorPageContent({
         </div>
 
         <FieldGroup title={t('inspector.size')}>
-          <div className="flex gap-1">
-            <div className="flex-1">
+          <div className="flex gap-2">
+            <div className="min-w-0 flex-1">
               <PiNumber
                 label={t('inspector.size.width')}
                 value={page.layout.size[0]}
@@ -74,7 +80,7 @@ function InspectorPageContent({
                 min={1}
               />
             </div>
-            <div className="flex-1">
+            <div className="min-w-0 flex-1">
               <PiNumber
                 label={t('inspector.size.height')}
                 value={page.layout.size[1]}
@@ -85,18 +91,97 @@ function InspectorPageContent({
           </div>
         </FieldGroup>
 
+        <FieldGroup title="布局">
+          <div className="flex flex-col gap-2.5">
+            <div className="flex gap-2">
+              <div className="min-w-0 flex-1">
+                <PiSelect
+                  label="方向"
+                  value={page.layout.direction}
+                  onChange={v => updateField(['layout', 'direction'], v)}
+                  items={[
+                    { label: '水平', value: 'row' },
+                    { label: '垂直', value: 'column' },
+                  ]}
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <PiSelect
+                  label="换行"
+                  value={page.layout.wrap}
+                  onChange={v => updateField(['layout', 'wrap'], v)}
+                  items={[
+                    { label: '不换行', value: 'nowrap' },
+                    { label: '换行', value: 'wrap' },
+                  ]}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="min-w-0 flex-1">
+                <PiNumber
+                  label="间距"
+                  value={page.layout.gap}
+                  onChange={v => updateField(['layout', 'gap'], v)}
+                  min={0}
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <PiSelect
+                  label="对齐"
+                  value={page.layout.align}
+                  onChange={v => updateField(['layout', 'align'], v)}
+                  items={[
+                    { label: '顶部', value: 'start' },
+                    { label: '居中', value: 'center' },
+                    { label: '底部', value: 'end' },
+                    { label: '拉伸', value: 'stretch' },
+                  ]}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <div className="min-w-0 flex-1">
+                <PiSelect
+                  label="分布"
+                  value={page.layout.justify}
+                  onChange={v => updateField(['layout', 'justify'], v)}
+                  items={[
+                    { label: '起始', value: 'start' },
+                    { label: '居中', value: 'center' },
+                    { label: '末尾', value: 'end' },
+                    { label: '两端', value: 'between' },
+                    { label: '环绕', value: 'around' },
+                    { label: '均分', value: 'evenly' },
+                  ]}
+                />
+              </div>
+              <div className="min-w-0 flex-1" />
+            </div>
+            <PiPadding
+              label="内边距"
+              value={page.layout.padding}
+              onChange={v => updateField(['layout', 'padding'], v)}
+            />
+          </div>
+        </FieldGroup>
+
         <FieldGroup title={t('inspector.color')}>
-          <div className="flex flex-col gap-1.5">
-            <PiColor
-              label={t('inspector.color.background')}
-              value={page.background}
-              onChange={v => updateField(['background'], v)}
-            />
-            <PiColor
-              label={t('inspector.color.foreground')}
-              value={page.foreground}
-              onChange={v => updateField(['foreground'], v)}
-            />
+          <div className="flex gap-2">
+            <div className="min-w-0 flex-1">
+              <PiColor
+                label={t('inspector.color.background')}
+                value={page.background}
+                onChange={v => updateField(['background'], v)}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <PiColor
+                label={t('inspector.color.foreground')}
+                value={page.foreground}
+                onChange={v => updateField(['foreground'], v)}
+              />
+            </div>
           </div>
         </FieldGroup>
       </div>

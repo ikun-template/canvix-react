@@ -5,10 +5,10 @@ import { rendererMap } from './renderer-map.js';
 import type { UpdateField } from './types.js';
 
 const spanClass: Record<number, string> = {
-  1: 'basis-[calc(25%-3px)]',
-  2: 'basis-[calc(50%-2px)]',
-  3: 'basis-[calc(75%-1px)]',
-  4: 'basis-full',
+  1: 'min-w-0 basis-[calc(25%-6px)]',
+  2: 'min-w-0 basis-[calc(50%-4px)]',
+  3: 'min-w-0 basis-[calc(75%-2px)]',
+  4: 'min-w-0 basis-full',
 };
 
 interface PropertyRendererProps {
@@ -26,7 +26,7 @@ function PropertyRenderer({
     <>
       {groups.map(group => (
         <FieldGroup key={group.title} title={group.title}>
-          <div className="flex flex-wrap gap-x-1 gap-y-1.5">
+          <div className="flex flex-wrap gap-x-2 gap-y-2.5">
             {group.properties.map(prop => {
               const Comp = rendererMap[prop.renderer];
               if (!Comp) return null;

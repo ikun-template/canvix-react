@@ -10,11 +10,11 @@ interface FieldRowProps {
 
 function FieldRow({ label, children, className }: FieldRowProps) {
   return (
-    <div className={cn('flex items-center gap-1', className)}>
-      <span className="text-muted-foreground w-8 shrink-0 truncate text-xs">
+    <div className={cn('flex min-w-0 flex-col gap-1', className)}>
+      <span className="text-muted-foreground text-xs leading-none">
         {label}
       </span>
-      <div className="min-w-0 flex-1">{children}</div>
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }

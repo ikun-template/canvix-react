@@ -25,7 +25,7 @@ function ColorInput({ value, onChange, className }: ColorInputProps) {
       type="button"
       onClick={handleClick}
       className={cn(
-        'border-input flex h-7 w-full items-center gap-1.5 rounded-md border px-1.5 text-xs',
+        'border-input flex h-8 w-full min-w-0 items-center gap-1.5 overflow-hidden rounded-md border px-2 text-sm',
         className,
       )}
     >
@@ -33,7 +33,7 @@ function ColorInput({ value, onChange, className }: ColorInputProps) {
         className="border-input size-4 shrink-0 rounded-sm border"
         style={{ backgroundColor: value }}
       />
-      <span className="text-muted-foreground truncate">
+      <span className="text-muted-foreground min-w-0 flex-1 truncate">
         {value || '未设置'}
       </span>
     </button>

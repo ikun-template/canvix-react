@@ -17,7 +17,7 @@ function TextInput({ value, onChange, className, ...props }: TextInputProps) {
       type="text"
       value={value}
       onChange={e => onChange(e.target.value)}
-      className={cn('h-7 px-2 text-xs', className)}
+      className={cn('h-8 px-2 text-sm', className)}
       {...props}
     />
   );

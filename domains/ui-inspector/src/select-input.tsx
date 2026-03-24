@@ -8,12 +8,18 @@ import {
 
 import { cn } from './utils.js';
 
+type SelectOption = string | { label: string; value: string };
+
 interface SelectInputProps {
   value: string;
   onChange: (value: string) => void;
-  items: string[];
+  items: SelectOption[];
   placeholder?: string;
   className?: string;
+}
+
+function normalizeOption(item: SelectOption) {
+  return typeof item === 'string' ? { label: item, value: item } : item;
 }
 
 function SelectInput({
@@ -23,15 +29,22 @@ function SelectInput({
   placeholder,
   className,
 }: SelectInputProps) {
+  const options = items.map(normalizeOption);
+
   return (
     <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className={cn('h-7 px-2 text-xs', className)}>
+      <SelectTrigger
+        className={cn(
+          'h-8 w-full min-w-0 overflow-hidden px-2 text-sm',
+          className,
+        )}
+      >
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        {items.map(item => (
-          <SelectItem key={item} value={item} className="text-xs">
-            {item}
+        {options.map(opt => (
+          <SelectItem key={opt.value} value={opt.value} className="text-sm">
+            {opt.label}
           </SelectItem>
         ))}
       </SelectContent>

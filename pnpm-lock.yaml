@@ -225,6 +225,9 @@ importers:
 
   domains/inspector-controls:
     dependencies:
+      '@canvix-react/icon':
+        specifier: workspace:*
+        version: link:../icon
       '@canvix-react/toolkit-editor':
         specifier: workspace:*
         version: link:../toolkit-editor

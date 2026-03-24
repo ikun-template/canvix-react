@@ -13,8 +13,8 @@ function PgSize({ width, height, updateField }: PgSizeProps) {
   const { t } = useI18n();
 
   return (
-    <div className="flex gap-1">
-      <div className="flex-1">
+    <div className="flex gap-2">
+      <div className="min-w-0 flex-1">
         <FieldRow label={t('inspector.size.width')}>
           <NumberInput
             value={width}
@@ -22,7 +22,7 @@ function PgSize({ width, height, updateField }: PgSizeProps) {
           />
         </FieldRow>
       </div>
-      <div className="flex-1">
+      <div className="min-w-0 flex-1">
         <FieldRow label={t('inspector.size.height')}>
           <NumberInput
             value={height}

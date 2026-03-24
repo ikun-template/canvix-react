@@ -9,7 +9,10 @@ export interface WidgetRuntime<T = unknown> {
   name: string;
   mode: LayoutMode;
   position: { axis: [number, number] };
-  layout: { size: [number, number] };
+  layout: {
+    size: [number, number];
+    padding: [number, number, number, number];
+  };
   rotation: number;
   hide: boolean;
   opacity: number;

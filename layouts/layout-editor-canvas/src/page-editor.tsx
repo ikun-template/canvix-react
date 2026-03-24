@@ -199,6 +199,7 @@ function WidgetEditor({
           : undefined,
         opacity: widget.opacity,
         display: widget.hide ? 'none' : undefined,
+        padding: widget.layout.padding.map(v => `${v}px`).join(' '),
       }}
     >
       {Component && <Component data={widget.custom_data} />}

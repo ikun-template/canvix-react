@@ -31,7 +31,7 @@ function NumberInput({
       min={min}
       max={max}
       onChange={e => onChange(Number(e.target.value))}
-      className={cn('h-7 px-2 text-xs', className)}
+      className={cn('h-8 px-2 text-sm', className)}
       {...props}
     />
   );

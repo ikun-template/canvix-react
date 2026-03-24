@@ -135,6 +135,23 @@ export function Canvas({ ctx }: CanvasProps) {
           position: 'absolute',
           transformOrigin: '0 0',
           transform: `translate(${scroll.x}px, ${scroll.y}px) scale(${zoom})`,
+          display: 'flex',
+          flexDirection: page.layout.direction,
+          flexWrap: page.layout.wrap,
+          gap: page.layout.gap,
+          alignItems:
+            page.layout.align === 'stretch'
+              ? 'stretch'
+              : `flex-${page.layout.align}`,
+          justifyContent:
+            (
+              {
+                between: 'space-between',
+                around: 'space-around',
+                evenly: 'space-evenly',
+              } as Record<string, string>
+            )[page.layout.justify] ?? `flex-${page.layout.justify}`,
+          padding: page.layout.padding.map(v => `${v}px`).join(' '),
         }}
       >
         <PageLiveProvider

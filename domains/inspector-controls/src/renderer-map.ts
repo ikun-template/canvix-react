@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 
 import { PiColor } from './pi-color/index.js';
 import { PiNumber } from './pi-number/index.js';
+import { PiPadding } from './pi-padding/index.js';
 import { PiPosition } from './pi-position/index.js';
 import { PiSelect } from './pi-select/index.js';
 import { PiSize } from './pi-size/index.js';
@@ -23,6 +24,7 @@ const rendererMap: Record<string, ComponentType<any>> = {
   text: PiText,
   color: PiColor,
   select: PiSelect,
+  padding: PiPadding,
   position: PiPosition,
   size: PiSize,
 };
