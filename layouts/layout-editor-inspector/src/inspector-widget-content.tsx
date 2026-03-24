@@ -1,10 +1,10 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import { PropertyRenderer } from '@canvix-react/inspector-controls';
 import { useDocumentRef, useWidgetLive } from '@canvix-react/toolkit-shared';
 import { useCallback, useMemo } from 'react';
 
 interface InspectorWidgetContentProps {
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
   widgetId: string;
   pageId: string;
 }

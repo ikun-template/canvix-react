@@ -3,7 +3,7 @@ import type {
   OperationModel,
   UpdateOptions,
 } from '@canvix-react/chronicle';
-import type { EditorState, TempSession } from '@canvix-react/dock-editor';
+import type { TempSession } from '@canvix-react/dock-editor';
 import type { WidgetRegistry } from '@canvix-react/widget-registry';
 import { createContext, useContext } from 'react';
 
@@ -11,7 +11,6 @@ export type PluginMeta = { name: string; slot?: string };
 
 export interface EditorRefContextValue {
   chronicle: Chronicle;
-  editorState: EditorState;
   registry: WidgetRegistry;
   plugins: PluginMeta[];
   update(model: OperationModel, options?: UpdateOptions): void;

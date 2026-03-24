@@ -1,7 +1,12 @@
-import type { PluginContext, ToolType } from '@canvix-react/dock-editor';
+import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import { Hand, MousePointer2, Plus } from '@canvix-react/icon';
 import { widgetDefaults } from '@canvix-react/schema-widget';
-import { useEditorLive, useI18n } from '@canvix-react/toolkit-editor';
+import {
+  useEditorDispatch,
+  useEditorLive,
+  useI18n,
+  type ToolType,
+} from '@canvix-react/toolkit-editor';
 import {
   Button,
   Popover,
@@ -13,7 +18,7 @@ import type { WidgetDefinition } from '@canvix-react/widget-registry';
 import { useState } from 'react';
 
 interface ToolboxProps {
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
 }
 
 const TOOLBAR_TOOLS = [
@@ -27,6 +32,7 @@ const TOOLBAR_TOOLS = [
 
 export function Toolbox({ ctx }: ToolboxProps) {
   const { t } = useI18n();
+  const dispatch = useEditorDispatch();
   const definitions = ctx.registry.getAll();
   const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -71,7 +77,7 @@ export function Toolbox({ ctx }: ToolboxProps) {
           size="icon"
           className={`h-8 w-8 ${activeTool === id ? 'bg-accent text-accent-foreground' : ''}`}
           title={t(labelKey)}
-          onClick={() => ctx.editorState.setActiveTool(id)}
+          onClick={() => dispatch.setActiveTool(id)}
         >
           <Icon size={16} />
         </Button>

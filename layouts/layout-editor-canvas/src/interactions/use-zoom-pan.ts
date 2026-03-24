@@ -1,16 +1,16 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { EditorDispatch } from '@canvix-react/toolkit-editor';
 import { useEffect, useRef } from 'react';
 
 import { ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './types.js';
 
 interface UseZoomPanOptions {
-  ctx: PluginContext;
+  dispatch: EditorDispatch;
   canvasRef: React.RefObject<HTMLDivElement | null>;
   spaceHeldRef: React.RefObject<boolean>;
 }
 
 export function useZoomPan({
-  ctx,
+  dispatch,
   canvasRef,
   spaceHeldRef,
 }: UseZoomPanOptions) {
@@ -35,31 +35,32 @@ export function useZoomPan({
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      const oldZoom = ctx.editorState.zoom;
+      const snap = dispatch.getSnapshot();
+      const oldZoom = snap.zoom;
       const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
       const newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, oldZoom + delta));
 
       if (newZoom === oldZoom) return;
 
       // Adjust scroll to keep mouse position stable
-      const scroll = ctx.editorState.scroll;
+      const scroll = snap.scroll;
       const scale = newZoom / oldZoom;
       const newScrollX = mouseX - scale * (mouseX - scroll.x);
       const newScrollY = mouseY - scale * (mouseY - scroll.y);
 
-      ctx.editorState.setZoom(newZoom);
-      ctx.editorState.setScroll(newScrollX, newScrollY);
+      dispatch.setZoom(newZoom);
+      dispatch.setScroll(newScrollX, newScrollY);
     }
 
     canvas.addEventListener('wheel', onWheel, { passive: false });
     return () => canvas.removeEventListener('wheel', onWheel);
-  }, [ctx, canvasRef]);
+  }, [dispatch, canvasRef]);
 
   function startPan(e: PointerEvent) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const scroll = ctx.editorState.scroll;
+    const scroll = dispatch.getSnapshot().scroll;
     panStateRef.current = {
       active: true,
       pointerId: e.pointerId,
@@ -76,7 +77,7 @@ export function useZoomPan({
       if (!st) return;
       const dx = ev.clientX - st.originX;
       const dy = ev.clientY - st.originY;
-      ctx.editorState.setScroll(st.startScrollX + dx, st.startScrollY + dy);
+      dispatch.setScroll(st.startScrollX + dx, st.startScrollY + dy);
     }
 
     function onUp() {

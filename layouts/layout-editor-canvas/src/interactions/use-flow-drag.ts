@@ -1,4 +1,5 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { LayoutPluginContext } from '@canvix-react/dock-editor';
+import type { EditorDispatch } from '@canvix-react/toolkit-editor';
 
 import type { Point } from './types.js';
 import { DRAG_THRESHOLD } from './types.js';
@@ -31,12 +32,15 @@ interface FlowDragActive {
   };
 }
 
-export function createFlowDragMove(ctx: PluginContext) {
+export function createFlowDragMove(
+  ctx: LayoutPluginContext,
+  dispatch: EditorDispatch,
+) {
   let pending: FlowDragPending | null = null;
   let active: FlowDragActive | null = null;
 
   function start(e: PointerEvent, widgetId: string, pageId: string) {
-    ctx.editorState.setInteracting(true);
+    dispatch.setInteracting(true);
 
     pending = {
       origin: { x: e.clientX, y: e.clientY },
@@ -104,9 +108,9 @@ export function createFlowDragMove(ctx: PluginContext) {
     widgetEl.style.pointerEvents = 'none';
     widgetEl.setAttribute('data-drag-source', '');
 
-    ctx.editorState.setFlowDrag(pending.widgetId, [width, height]);
-    ctx.editorState.setFlowDropIndex(originalIndex);
-    ctx.editorState.setInteracting(true);
+    dispatch.setFlowDrag(pending.widgetId, [width, height]);
+    dispatch.setFlowDropIndex(originalIndex);
+    dispatch.setInteracting(true);
 
     active = {
       origin: pending.origin,
@@ -135,7 +139,7 @@ export function createFlowDragMove(ctx: PluginContext) {
 
     if (!active) return;
 
-    const zoom = ctx.editorState.zoom;
+    const zoom = dispatch.getSnapshot().zoom;
     const dx = (e.clientX - active.origin.x) / zoom;
     const dy = (e.clientY - active.origin.y) / zoom;
 
@@ -143,7 +147,7 @@ export function createFlowDragMove(ctx: PluginContext) {
     active.widgetEl.style.top = `${active.initialTop + dy}px`;
 
     const dropIndex = computeDropIndex(e, active);
-    ctx.editorState.setFlowDropIndex(dropIndex);
+    dispatch.setFlowDropIndex(dropIndex);
   }
 
   function computeDropIndex(e: PointerEvent, s: FlowDragActive): number {
@@ -170,7 +174,7 @@ export function createFlowDragMove(ctx: PluginContext) {
 
     // Convert pointer to page-container coordinates
     const containerRect = s.pageContainer.getBoundingClientRect();
-    const zoom = ctx.editorState.zoom;
+    const zoom = dispatch.getSnapshot().zoom;
     const pointerY = (e.clientY - containerRect.top) / zoom;
 
     // Find visual insertion index among flow elements
@@ -210,7 +214,7 @@ export function createFlowDragMove(ctx: PluginContext) {
     }
     if (!active) return;
 
-    const dropIndex = ctx.editorState.getSnapshot().flowDropIndex;
+    const dropIndex = dispatch.getSnapshot().flowDropIndex;
 
     if (dropIndex !== null && dropIndex !== active.originalIndex) {
       // Adjust target index for array move semantics:
@@ -250,10 +254,10 @@ export function createFlowDragMove(ctx: PluginContext) {
       s.widgetEl.style.pointerEvents = s.originalStyle.pointerEvents;
       s.widgetEl.removeAttribute('data-drag-source');
 
-      ctx.editorState.setFlowDrag(null);
+      dispatch.setFlowDrag(null);
     }
 
-    ctx.editorState.setInteracting(false);
+    dispatch.setInteracting(false);
 
     document.removeEventListener('pointermove', onMove);
     document.removeEventListener('pointerup', onEnd);

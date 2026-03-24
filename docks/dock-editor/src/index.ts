@@ -3,13 +3,8 @@ export {
   type RuntimeOptions as DockEditorOptions,
 } from './runtime/index.js';
 export type {
-  PluginContext,
-  PluginDefinition,
-  PluginInstance,
+  LayoutPluginContext,
+  LayoutPluginDefinition,
+  LayoutPluginInstance,
 } from './runtime/types.js';
-export type {
-  EditorState,
-  EditorStateSnapshot,
-  ToolType,
-} from './runtime/editor-state.js';
 export type { TempSession } from './runtime/temp-session.js';

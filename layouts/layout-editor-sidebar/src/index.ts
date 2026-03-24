@@ -1,8 +1,8 @@
-import type { PluginDefinition } from '@canvix-react/dock-editor';
+import type { LayoutPluginDefinition } from '@canvix-react/dock-editor';
 
 import { Sidebar } from './sidebar.js';
 
-export const sidebarPlugin: PluginDefinition = {
+export const sidebarPlugin: LayoutPluginDefinition = {
   name: 'layout-sidebar',
   slot: 'sidebar',
   component: Sidebar,

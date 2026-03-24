@@ -1,4 +1,4 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import { useEditorLive, useI18n } from '@canvix-react/toolkit-editor';
 import { InspectorColorPickerProvider } from '@canvix-react/ui-inspector';
 
@@ -6,7 +6,7 @@ import { InspectorPage } from './inspector-page.js';
 import { InspectorWidget } from './inspector-widget.js';
 
 interface InspectorProps {
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
 }
 
 export function Inspector({ ctx }: InspectorProps) {
@@ -24,7 +24,7 @@ function InspectorContent({
   selected,
   pageId,
 }: {
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
   selected: string[];
   pageId: string;
 }) {

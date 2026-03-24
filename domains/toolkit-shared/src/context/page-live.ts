@@ -1,9 +1,10 @@
+import type { PageRuntime } from '@canvix-react/schema-page';
 import { createContext, useContext } from 'react';
 
 export interface PageLiveContextValue {
   pageId: string;
   name: string;
-  layout: { size: [number, number] };
+  layout: PageRuntime['layout'];
   foreground: string;
   background: string;
   widgetIds: string[];

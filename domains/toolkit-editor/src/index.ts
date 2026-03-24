@@ -23,6 +23,19 @@ export {
   type EditorLiveContextValue,
 } from './context/editor-live.js';
 
+// Editor dispatch context
+export {
+  EditorDispatchContext,
+  useEditorDispatch,
+  type EditorDispatch,
+} from './context/editor-dispatch.js';
+
+// Editor state store types
+export type {
+  EditorStateSnapshot,
+  ToolType,
+} from './store/editor-state-store.js';
+
 // Editor providers
 export { EditorLiveProvider } from './providers/editor-live-provider.js';
 

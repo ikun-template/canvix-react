@@ -1,4 +1,4 @@
-import type { PluginDefinition } from '@canvix-react/dock-editor';
+import type { LayoutPluginDefinition } from '@canvix-react/dock-editor';
 import { createI18nManager } from '@canvix-react/i18n';
 import { canvasPlugin } from '@canvix-react/layout-editor-canvas';
 import { inspectorPlugin } from '@canvix-react/layout-editor-inspector';
@@ -38,7 +38,7 @@ const i18nReady = i18nManager.setLocale('zh-CN').then(() => {
   initSettingsFromStorage(i18nManager.setLocale, themeManager.setTheme);
 });
 
-const plugins: PluginDefinition[] = [
+const plugins: LayoutPluginDefinition[] = [
   canvasPlugin,
   sidebarPlugin,
   inspectorPlugin,
@@ -77,7 +77,6 @@ export default function App() {
       ctx
         ? {
             chronicle: ctx.chronicle,
-            editorState: ctx.editorState,
             registry: ctx.registry,
             plugins: pluginMetas,
             update: ctx.update,
@@ -86,6 +85,9 @@ export default function App() {
         : null,
     [ctx],
   );
+
+  const doc = ctx ? ctx.chronicle.getDocument() : null;
+  const initialPageId = doc?.pages[0]?.id;
 
   const subscribeDocument = useCallback(
     (cb: () => void) =>
@@ -104,7 +106,7 @@ export default function App() {
       {ctx && docRefValue && editorRefValue && container && (
         <EditorRefProvider value={editorRefValue}>
           <DocumentRefProvider value={docRefValue}>
-            <EditorLiveProvider>
+            <EditorLiveProvider initialPageId={initialPageId}>
               <DocumentLiveProvider subscribe={subscribeDocument}>
                 {plugins.map(p => {
                   if (!p.slot || !p.component) return null;
@@ -114,7 +116,11 @@ export default function App() {
                   if (!slotEl) return null;
                   const Component = p.component;
                   return createPortal(
-                    <SlotErrorBoundary slotName={p.slot} ctx={ctx}>
+                    <SlotErrorBoundary
+                      key={p.name}
+                      slotName={p.slot}
+                      chronicle={ctx.chronicle}
+                    >
                       <Component ctx={ctx} />
                     </SlotErrorBoundary>,
                     slotEl,

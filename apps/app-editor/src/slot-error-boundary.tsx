@@ -1,11 +1,16 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { Chronicle } from '@canvix-react/chronicle';
+import { useEditorDispatch } from '@canvix-react/toolkit-editor';
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 
-interface Props {
+interface SlotErrorBoundaryProps {
   slotName: string;
-  ctx: PluginContext;
+  chronicle: Chronicle;
   children: ReactNode;
+}
+
+interface InnerProps extends SlotErrorBoundaryProps {
+  onEditorChange: (listener: () => void) => () => void;
 }
 
 interface State {
@@ -15,7 +20,7 @@ interface State {
 const MAX_RETRIES = 3;
 const RETRY_WINDOW_MS = 3000;
 
-export class SlotErrorBoundary extends Component<Props, State> {
+class SlotErrorBoundaryInner extends Component<InnerProps, State> {
   state: State = { error: null };
   private unsubscribers: (() => void)[] = [];
   private recentErrors: number[] = [];
@@ -52,8 +57,8 @@ export class SlotErrorBoundary extends Component<Props, State> {
     };
 
     this.unsubscribers.push(
-      this.props.ctx.editorState.onChange(tryRecover),
-      this.props.ctx.chronicle.onUpdate(() => tryRecover()),
+      this.props.onEditorChange(tryRecover),
+      this.props.chronicle.onUpdate(() => tryRecover()),
     );
   }
 
@@ -83,4 +88,11 @@ export class SlotErrorBoundary extends Component<Props, State> {
     }
     return this.props.children;
   }
+}
+
+export function SlotErrorBoundary(props: SlotErrorBoundaryProps) {
+  const dispatch = useEditorDispatch();
+  return (
+    <SlotErrorBoundaryInner {...props} onEditorChange={dispatch.onChange} />
+  );
 }

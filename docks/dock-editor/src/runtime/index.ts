@@ -3,24 +3,22 @@ import { Chronicle } from '@canvix-react/chronicle';
 import type { DocumentRuntime } from '@canvix-react/schema-document';
 import type { WidgetRegistry } from '@canvix-react/widget-registry';
 
-import { EditorState } from './editor-state.js';
 import { EventBus } from './event-bus.js';
 import { HookSystem } from './hook-system.js';
 import { PluginManager } from './plugin-manager.js';
 import { createTempSession } from './temp-session.js';
 import { TokenResolver } from './token-resolver.js';
-import type { PluginContext, PluginDefinition } from './types.js';
+import type { LayoutPluginContext, LayoutPluginDefinition } from './types.js';
 
 export interface RuntimeOptions {
   document: DocumentRuntime;
   registry: WidgetRegistry;
-  plugins: PluginDefinition[];
+  plugins: LayoutPluginDefinition[];
   container: HTMLElement;
 }
 
 export class Runtime {
   readonly chronicle: Chronicle;
-  readonly editorState: EditorState;
   readonly hooks: HookSystem;
   readonly events: EventBus;
   readonly registry: WidgetRegistry;
@@ -29,11 +27,10 @@ export class Runtime {
   private pluginManager: PluginManager;
   private container: HTMLElement;
   private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
-  private _ctx: PluginContext | null = null;
+  private _ctx: LayoutPluginContext | null = null;
 
   constructor(options: RuntimeOptions) {
     this.chronicle = new Chronicle(options.document);
-    this.editorState = new EditorState();
     this.hooks = new HookSystem();
     this.events = new EventBus();
     this.registry = options.registry;
@@ -56,12 +53,6 @@ export class Runtime {
   }
 
   async start(): Promise<void> {
-    // Auto-activate the first page if none is set
-    const doc = this.chronicle.getDocument();
-    if (!this.editorState.activePageId && doc.pages.length > 0) {
-      this.editorState.setActivePage(doc.pages[0].id);
-    }
-
     // Undo / Redo keyboard shortcuts
     this.keydownHandler = (e: KeyboardEvent) => {
       const mod = e.metaKey || e.ctrlKey;
@@ -99,22 +90,21 @@ export class Runtime {
     this.events.clear();
   }
 
-  /** Returns the shared PluginContext (created once, cached). */
-  getPluginContext(): PluginContext {
+  /** Returns the shared LayoutPluginContext (created once, cached). */
+  getPluginContext(): LayoutPluginContext {
     if (!this._ctx) {
       this._ctx = this.createPluginContext();
     }
     return this._ctx;
   }
 
-  private createPluginContext(): PluginContext {
+  private createPluginContext(): LayoutPluginContext {
     const { chronicle, hooks, tokenResolver } = this;
 
     return {
       hooks: this.hooks,
       events: this.events,
       chronicle: this.chronicle,
-      editorState: this.editorState,
       registry: this.registry,
       tokenResolver,
       getSlotElement: (name: string) =>

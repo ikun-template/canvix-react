@@ -1,28 +1,28 @@
 import type {
-  PluginContext,
-  PluginDefinition,
-  PluginInstance,
+  LayoutPluginContext,
+  LayoutPluginDefinition,
+  LayoutPluginInstance,
 } from './types.js';
 
 interface ManagedPlugin {
-  definition: PluginDefinition;
-  instance?: PluginInstance;
+  definition: LayoutPluginDefinition;
+  instance?: LayoutPluginInstance;
 }
 
 export class PluginManager {
   private plugins: ManagedPlugin[] = [];
 
-  register(definition: PluginDefinition): void {
+  register(definition: LayoutPluginDefinition): void {
     this.plugins.push({ definition });
   }
 
-  registerAll(definitions: PluginDefinition[]): void {
+  registerAll(definitions: LayoutPluginDefinition[]): void {
     for (const def of definitions) {
       this.register(def);
     }
   }
 
-  async setupAll(ctx: PluginContext): Promise<void> {
+  async setupAll(ctx: LayoutPluginContext): Promise<void> {
     for (const plugin of this.plugins) {
       plugin.instance = await plugin.definition.setup(ctx);
     }

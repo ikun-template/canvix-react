@@ -1,13 +1,14 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import {
   useChronicleSelective,
+  useEditorDispatch,
   useEditorLive,
   useI18n,
 } from '@canvix-react/toolkit-editor';
 
 interface WidgetExplorerProps {
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
 }
 
 const shouldUpdate = (model: OperationModel) => {
@@ -23,6 +24,7 @@ const shouldUpdate = (model: OperationModel) => {
 
 export function WidgetExplorer({ ctx }: WidgetExplorerProps) {
   const { t } = useI18n();
+  const dispatch = useEditorDispatch();
   const snapshot = useEditorLive();
 
   const doc = useChronicleSelective(shouldUpdate);
@@ -48,9 +50,9 @@ export function WidgetExplorer({ ctx }: WidgetExplorerProps) {
         return (
           <li
             key={widget.id}
-            onClick={() => ctx.editorState.setSelection([widget.id])}
-            onPointerEnter={() => ctx.editorState.setHoveredWidget(widget.id)}
-            onPointerLeave={() => ctx.editorState.setHoveredWidget(null)}
+            onClick={() => dispatch.setSelection([widget.id])}
+            onPointerEnter={() => dispatch.setHoveredWidget(widget.id)}
+            onPointerLeave={() => dispatch.setHoveredWidget(null)}
             className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm ${
               isSelected
                 ? 'bg-accent text-accent-foreground font-medium'

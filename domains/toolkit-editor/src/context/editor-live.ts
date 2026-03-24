@@ -1,5 +1,6 @@
-import type { ToolType } from '@canvix-react/dock-editor';
 import { createContext, useContext } from 'react';
+
+import type { ToolType } from '../store/editor-state-store.js';
 
 export interface EditorLiveContextValue {
   activePageId: string;

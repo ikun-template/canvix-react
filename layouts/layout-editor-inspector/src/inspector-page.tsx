@@ -1,4 +1,4 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import {
   PiColor,
   PiNumber,
@@ -13,7 +13,7 @@ import { FieldGroup } from '@canvix-react/ui-inspector';
 import { useCallback } from 'react';
 
 interface InspectorPageProps {
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
   pageId: string;
 }
 
@@ -37,7 +37,7 @@ function InspectorPageContent({
   ctx,
   pageId,
 }: {
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
   pageId: string;
 }) {
   const { t } = useI18n();

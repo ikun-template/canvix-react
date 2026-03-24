@@ -1,4 +1,4 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import { useEditorLive } from '@canvix-react/toolkit-editor';
 import {
@@ -13,7 +13,7 @@ import { useCallback, useMemo } from 'react';
 import { computePlaceholderColor } from './color-contrast.js';
 
 interface PageEditorProps {
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
   registry: WidgetRegistry;
 }
 
@@ -138,7 +138,7 @@ function WidgetEditorWrapper({
 }: {
   widgetId: string;
   pageId: string;
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
   registry: WidgetRegistry;
 }) {
   const subscribeWidget = useCallback(

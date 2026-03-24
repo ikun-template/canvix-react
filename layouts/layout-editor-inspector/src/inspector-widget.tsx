@@ -1,4 +1,4 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import { WidgetLiveProvider } from '@canvix-react/toolkit-shared';
 import { useCallback } from 'react';
@@ -6,7 +6,7 @@ import { useCallback } from 'react';
 import { InspectorWidgetContent } from './inspector-widget-content.js';
 
 interface InspectorWidgetProps {
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
   widgetId: string;
   pageId: string;
 }

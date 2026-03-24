@@ -15,7 +15,11 @@ export interface EditorStateSnapshot {
   flowDragWidgetSize: [number, number] | null;
 }
 
-export class EditorState {
+export interface EditorStateStoreOptions {
+  initialPageId?: string;
+}
+
+export class EditorStateStore {
   private _activePageId = '';
   private _selectedWidgetIds: string[] = [];
   private _zoom = 1;
@@ -29,28 +33,10 @@ export class EditorState {
   private _snapshot: EditorStateSnapshot | null = null;
   private listeners = new Set<StateListener>();
 
-  get activePageId() {
-    return this._activePageId;
-  }
-
-  get selectedWidgetIds() {
-    return this._selectedWidgetIds;
-  }
-
-  get zoom() {
-    return this._zoom;
-  }
-
-  get scroll() {
-    return this._scroll;
-  }
-
-  get activeTool() {
-    return this._activeTool;
-  }
-
-  get interacting() {
-    return this._interacting;
+  constructor(options?: EditorStateStoreOptions) {
+    if (options?.initialPageId) {
+      this._activePageId = options.initialPageId;
+    }
   }
 
   setActivePage(pageId: string) {

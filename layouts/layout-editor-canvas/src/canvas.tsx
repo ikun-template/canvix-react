@@ -1,7 +1,8 @@
-import type { PluginContext } from '@canvix-react/dock-editor';
+import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import {
   useChronicleSelective,
+  useEditorDispatch,
   useEditorLive,
 } from '@canvix-react/toolkit-editor';
 import { PageLiveProvider } from '@canvix-react/toolkit-shared';
@@ -14,10 +15,11 @@ import { PageEditor } from './page-editor.js';
 import { SelectionOverlay } from './selection-overlay.js';
 
 interface CanvasProps {
-  ctx: PluginContext;
+  ctx: LayoutPluginContext;
 }
 
 export function Canvas({ ctx }: CanvasProps) {
+  const dispatch = useEditorDispatch();
   const {
     activePageId,
     activeTool,
@@ -43,10 +45,11 @@ export function Canvas({ ctx }: CanvasProps) {
   const doc = useChronicleSelective(shouldUpdate);
   const page = doc.pages.find(p => p.id === activePageId);
 
-  const { startPan } = useZoomPan({ ctx, canvasRef, spaceHeldRef });
+  const { startPan } = useZoomPan({ dispatch, canvasRef, spaceHeldRef });
 
   const { onPointerDown } = useCanvasPointer({
     ctx,
+    dispatch,
     pageId: page?.id ?? '',
     spaceHeldRef,
     startPan,
@@ -78,19 +81,19 @@ export function Canvas({ ctx }: CanvasProps) {
       while (target && target !== e.currentTarget) {
         const widgetId = target.getAttribute('data-widget-id');
         if (widgetId) {
-          ctx.editorState.setHoveredWidget(widgetId);
+          dispatch.setHoveredWidget(widgetId);
           return;
         }
         target = target.parentElement;
       }
-      ctx.editorState.setHoveredWidget(null);
+      dispatch.setHoveredWidget(null);
     },
-    [ctx.editorState, interacting],
+    [dispatch, interacting],
   );
 
   const onPointerLeave = useCallback(() => {
-    ctx.editorState.setHoveredWidget(null);
-  }, [ctx.editorState]);
+    dispatch.setHoveredWidget(null);
+  }, [dispatch]);
 
   const isPanning = activeTool === 'hand' || spaceHeldRef.current;
   const cursor = isPanning ? 'grab' : 'default';

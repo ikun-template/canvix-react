@@ -1,6 +1,6 @@
 import type {
-  PluginContext,
-  PluginDefinition,
+  LayoutPluginContext,
+  LayoutPluginDefinition,
 } from '@canvix-react/dock-editor';
 import { DockEditor } from '@canvix-react/dock-editor';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -17,14 +17,14 @@ export interface BootstrapState {
 interface BootstrapResult {
   state: BootstrapState;
   shellRef: (el: HTMLDivElement | null) => void;
-  ctx: PluginContext | null;
+  ctx: LayoutPluginContext | null;
   container: HTMLDivElement | null;
 }
 
 const PHASE_INTERVAL = 200;
 
 export function useEditorBootstrap(
-  plugins: PluginDefinition[],
+  plugins: LayoutPluginDefinition[],
 ): BootstrapResult {
   const [state, setState] = useState<BootstrapState>({
     phase: 'loading',
@@ -32,7 +32,7 @@ export function useEditorBootstrap(
     messageKey: 'loading.document',
   });
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
-  const [ctx, setCtx] = useState<PluginContext | null>(null);
+  const [ctx, setCtx] = useState<LayoutPluginContext | null>(null);
   const editorRef = useRef<DockEditor | null>(null);
 
   const shellRef = useCallback((el: HTMLDivElement | null) => {

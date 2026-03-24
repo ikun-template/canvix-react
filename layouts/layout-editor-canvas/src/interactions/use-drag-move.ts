@@ -1,4 +1,8 @@
-import type { PluginContext, TempSession } from '@canvix-react/dock-editor';
+import type {
+  LayoutPluginContext,
+  TempSession,
+} from '@canvix-react/dock-editor';
+import type { EditorDispatch } from '@canvix-react/toolkit-editor';
 
 import type { Point } from './types.js';
 import { DRAG_THRESHOLD } from './types.js';
@@ -17,12 +21,15 @@ interface DragMoveActive {
   widgetIds: string[];
 }
 
-export function createDragMove(ctx: PluginContext) {
+export function createDragMove(
+  ctx: LayoutPluginContext,
+  dispatch: EditorDispatch,
+) {
   let pending: DragMovePending | null = null;
   let active: DragMoveActive | null = null;
 
   function start(e: PointerEvent, widgetIds: string[], pageId: string) {
-    ctx.editorState.setInteracting(true);
+    dispatch.setInteracting(true);
 
     pending = {
       origin: { x: e.clientX, y: e.clientY },
@@ -61,7 +68,7 @@ export function createDragMove(ctx: PluginContext) {
     }
 
     const session = ctx.beginTemp();
-    ctx.editorState.setInteracting(true);
+    dispatch.setInteracting(true);
 
     active = {
       origin: pending.origin,
@@ -84,7 +91,7 @@ export function createDragMove(ctx: PluginContext) {
 
     if (!active) return;
 
-    const zoom = ctx.editorState.zoom;
+    const zoom = dispatch.getSnapshot().zoom;
     const dx = (e.clientX - active.origin.x) / zoom;
     const dy = (e.clientY - active.origin.y) / zoom;
 
@@ -127,7 +134,7 @@ export function createDragMove(ctx: PluginContext) {
     document.removeEventListener('pointermove', onMove);
     document.removeEventListener('pointerup', onEnd);
     document.removeEventListener('keydown', onKeyDown);
-    ctx.editorState.setInteracting(false);
+    dispatch.setInteracting(false);
     pending = null;
     active = null;
   }
