@@ -5,16 +5,31 @@ import {
   useEditorLive,
 } from '@canvix-react/toolkit-editor';
 import { PageLiveProvider } from '@canvix-react/toolkit-shared';
-import { useCallback } from 'react';
+import { useCallback, useMemo, useRef, type PointerEvent } from 'react';
 
+import { computeStripeBackground } from './color-contrast.js';
+import { useCanvasPointer } from './interactions/use-canvas-pointer.js';
+import { useZoomPan } from './interactions/use-zoom-pan.js';
 import { PageEditor } from './page-editor.js';
+import { SelectionOverlay } from './selection-overlay.js';
 
 interface CanvasProps {
   ctx: PluginContext;
 }
 
 export function Canvas({ ctx }: CanvasProps) {
-  const { activePageId } = useEditorLive();
+  const {
+    activePageId,
+    activeTool,
+    zoom,
+    scroll,
+    flowDragWidgetId,
+    interacting,
+  } = useEditorLive();
+
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const pageContainerRef = useRef<HTMLDivElement>(null);
+  const spaceHeldRef = useRef(false);
 
   const shouldUpdate = useCallback(
     (model: OperationModel) => {
@@ -27,6 +42,15 @@ export function Canvas({ ctx }: CanvasProps) {
 
   const doc = useChronicleSelective(shouldUpdate);
   const page = doc.pages.find(p => p.id === activePageId);
+
+  const { startPan } = useZoomPan({ ctx, canvasRef, spaceHeldRef });
+
+  const { onPointerDown } = useCanvasPointer({
+    ctx,
+    pageId: page?.id ?? '',
+    spaceHeldRef,
+    startPan,
+  });
 
   if (!page) return <div style={{ padding: 16, color: '#999' }}>No pages</div>;
 
@@ -47,39 +71,70 @@ export function Canvas({ ctx }: CanvasProps) {
     [ctx.chronicle, page.id],
   );
 
-  function handleClick(e: React.MouseEvent) {
-    const widgetEl = (e.target as HTMLElement).closest<HTMLElement>(
-      '[data-widget-id]',
-    );
-    if (widgetEl) {
-      ctx.editorState.setSelection([widgetEl.dataset.widgetId!]);
-    } else {
-      ctx.editorState.setSelection([]);
-    }
-  }
+  const onPointerMove = useCallback(
+    (e: PointerEvent<HTMLDivElement>) => {
+      if (interacting) return;
+      let target = e.target as HTMLElement | null;
+      while (target && target !== e.currentTarget) {
+        const widgetId = target.getAttribute('data-widget-id');
+        if (widgetId) {
+          ctx.editorState.setHoveredWidget(widgetId);
+          return;
+        }
+        target = target.parentElement;
+      }
+      ctx.editorState.setHoveredWidget(null);
+    },
+    [ctx.editorState, interacting],
+  );
 
-  console.debug('[mine] canvas render effect');
+  const onPointerLeave = useCallback(() => {
+    ctx.editorState.setHoveredWidget(null);
+  }, [ctx.editorState]);
+
+  const isPanning = activeTool === 'hand' || spaceHeldRef.current;
+  const cursor = isPanning ? 'grab' : 'default';
+  const isFlowDragging = flowDragWidgetId !== null;
+
+  const pageFg = page.foreground || '#fff';
+  const stripeBackground = useMemo(
+    () => computeStripeBackground(pageFg),
+    [pageFg],
+  );
 
   return (
     <div
+      ref={canvasRef}
       data-canvas
       style={{
         width: '100%',
         height: '100%',
-        overflowX: 'auto',
-        overflowY: 'auto',
+        overflow: 'hidden',
         position: 'relative',
         background: page.background,
+        cursor,
       }}
-      onClick={handleClick}
+      onPointerDown={onPointerDown}
     >
+      <style>{`
+        [data-flow-dragging] > [data-widget-id]:not([data-drag-source]) {
+          transform: scale(0.95);
+          transition: transform 200ms ease;
+        }
+      `}</style>
       <div
+        ref={pageContainerRef}
+        data-page-container
+        {...(isFlowDragging ? { 'data-flow-dragging': '' } : {})}
+        onPointerMove={onPointerMove}
+        onPointerLeave={onPointerLeave}
         style={{
           width: page.layout.size?.[0],
           height: page.layout.size?.[1],
           background: page.foreground || '#fff',
-          position: 'relative',
-          margin: '0 auto',
+          position: 'absolute',
+          transformOrigin: '0 0',
+          transform: `translate(${scroll.x}px, ${scroll.y}px) scale(${zoom})`,
         }}
       >
         <PageLiveProvider
@@ -89,6 +144,20 @@ export function Canvas({ ctx }: CanvasProps) {
         >
           <PageEditor ctx={ctx} registry={ctx.registry} />
         </PageLiveProvider>
+        <SelectionOverlay pageContainerRef={pageContainerRef} />
+        {/* Flow drag dimming overlay with diagonal stripes */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: stripeBackground,
+            backgroundRepeat: 'repeat',
+            pointerEvents: 'none',
+            zIndex: 0,
+            opacity: isFlowDragging ? 1 : 0,
+            transition: 'opacity 200ms ease',
+          }}
+        />
       </div>
     </div>
   );

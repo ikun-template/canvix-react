@@ -1,5 +1,6 @@
 import type { PluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
+import { useEditorLive } from '@canvix-react/toolkit-editor';
 import {
   WidgetLiveProvider,
   usePageLive,
@@ -7,7 +8,9 @@ import {
   useDocumentRef,
 } from '@canvix-react/toolkit-shared';
 import type { WidgetRegistry } from '@canvix-react/widget-registry';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
+
+import { computePlaceholderColor } from './color-contrast.js';
 
 interface PageEditorProps {
   ctx: PluginContext;
@@ -17,6 +20,8 @@ interface PageEditorProps {
 export function PageEditor({ ctx, registry }: PageEditorProps) {
   const { pageId, widgetIds } = usePageLive();
   const { getDocument } = useDocumentRef();
+  const { flowDragWidgetId, flowDropIndex, flowDragWidgetSize } =
+    useEditorLive();
 
   const doc = getDocument();
   const page = doc.pages.find(p => p.id === pageId);
@@ -33,18 +38,95 @@ export function PageEditor({ ctx, registry }: PageEditorProps) {
 
   const rootWidgetIds = widgetIds.filter(id => !slotChildIds.has(id));
 
+  const pageFg = page.foreground || '#fff';
+  const placeholderColor = useMemo(
+    () => computePlaceholderColor(pageFg),
+    [pageFg],
+  );
+
+  // During flow drag, the dragged widget is kept in the render tree
+  // (so its React component stays mounted and visible on the ghost).
+  // use-flow-drag.ts sets it to position:absolute via DOM, so it won't
+  // occupy flow space. We insert a placeholder at the drop position.
+  const isFlowDragging = flowDragWidgetId !== null;
+
+  // Compute visual drop index among root widgets (excluding dragged one)
+  let visualDropIndex: number | null = null;
+  if (isFlowDragging && flowDropIndex !== null) {
+    let count = 0;
+    for (const w of page.widgets) {
+      if (w.id === flowDragWidgetId || slotChildIds.has(w.id)) continue;
+      const fullIdx = page.widgets.indexOf(w);
+      if (fullIdx >= flowDropIndex) break;
+      count++;
+    }
+    visualDropIndex = count;
+  }
+
+  // Count non-dragged root widgets for "placeholder at end" check
+  const nonDragRootCount = isFlowDragging
+    ? rootWidgetIds.filter(id => id !== flowDragWidgetId).length
+    : rootWidgetIds.length;
+
+  const elements: React.ReactNode[] = [];
+  let visualIdx = 0;
+  for (const wId of rootWidgetIds) {
+    const isDragTarget = wId === flowDragWidgetId;
+
+    // Insert placeholder before this visual position (skip dragged widget in counting)
+    if (!isDragTarget && visualDropIndex === visualIdx) {
+      elements.push(
+        <FlowDropPlaceholder
+          key="__flow-drop-placeholder"
+          size={flowDragWidgetSize}
+          color={placeholderColor}
+        />,
+      );
+    }
+
+    elements.push(
+      <WidgetEditorWrapper
+        key={wId}
+        widgetId={wId}
+        pageId={pageId}
+        ctx={ctx}
+        registry={registry}
+      />,
+    );
+
+    if (!isDragTarget) visualIdx++;
+  }
+  // Placeholder at the end
+  if (visualDropIndex !== null && visualDropIndex >= nonDragRootCount) {
+    elements.push(
+      <FlowDropPlaceholder
+        key="__flow-drop-placeholder"
+        size={flowDragWidgetSize}
+        color={placeholderColor}
+      />,
+    );
+  }
+
+  return <>{elements}</>;
+}
+
+function FlowDropPlaceholder({
+  size,
+  color,
+}: {
+  size: [number, number] | null;
+  color: string;
+}) {
   return (
-    <>
-      {rootWidgetIds.map(wId => (
-        <WidgetEditorWrapper
-          key={wId}
-          widgetId={wId}
-          pageId={pageId}
-          ctx={ctx}
-          registry={registry}
-        />
-      ))}
-    </>
+    <div
+      style={{
+        width: size?.[0] ?? 100,
+        height: size?.[1] ?? 40,
+        background: color,
+        borderRadius: 8,
+        transition: 'all 200ms ease',
+      }}
+    />
   );
 }
 

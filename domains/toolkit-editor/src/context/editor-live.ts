@@ -4,10 +4,14 @@ import { createContext, useContext } from 'react';
 export interface EditorLiveContextValue {
   activePageId: string;
   selectedWidgetIds: string[];
+  hoveredWidgetId: string | null;
   activeTool: ToolType;
   interacting: boolean;
   zoom: number;
   scroll: { x: number; y: number };
+  flowDragWidgetId: string | null;
+  flowDropIndex: number | null;
+  flowDragWidgetSize: [number, number] | null;
 }
 
 export const EditorLiveContext = createContext<EditorLiveContextValue | null>(

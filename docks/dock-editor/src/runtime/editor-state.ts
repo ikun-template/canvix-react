@@ -5,10 +5,14 @@ export type ToolType = 'select' | 'hand';
 export interface EditorStateSnapshot {
   activePageId: string;
   selectedWidgetIds: string[];
+  hoveredWidgetId: string | null;
   zoom: number;
   scroll: { x: number; y: number };
   activeTool: ToolType;
   interacting: boolean;
+  flowDragWidgetId: string | null;
+  flowDropIndex: number | null;
+  flowDragWidgetSize: [number, number] | null;
 }
 
 export class EditorState {
@@ -18,6 +22,10 @@ export class EditorState {
   private _scroll = { x: 0, y: 0 };
   private _activeTool: ToolType = 'select';
   private _interacting = false;
+  private _hoveredWidgetId: string | null = null;
+  private _flowDragWidgetId: string | null = null;
+  private _flowDropIndex: number | null = null;
+  private _flowDragWidgetSize: [number, number] | null = null;
   private _snapshot: EditorStateSnapshot | null = null;
   private listeners = new Set<StateListener>();
 
@@ -72,7 +80,26 @@ export class EditorState {
   }
 
   setInteracting(value: boolean) {
+    if (this._interacting === value) return;
     this._interacting = value;
+    this.notify();
+  }
+
+  setHoveredWidget(id: string | null) {
+    if (this._hoveredWidgetId === id) return;
+    this._hoveredWidgetId = id;
+    this.notify();
+  }
+
+  setFlowDrag(widgetId: string | null, size?: [number, number]) {
+    this._flowDragWidgetId = widgetId;
+    this._flowDragWidgetSize = size ?? null;
+    this._flowDropIndex = null;
+    this.notify();
+  }
+
+  setFlowDropIndex(index: number | null) {
+    this._flowDropIndex = index;
     this.notify();
   }
 
@@ -82,10 +109,14 @@ export class EditorState {
       this._snapshot = {
         activePageId: this._activePageId,
         selectedWidgetIds: this._selectedWidgetIds,
+        hoveredWidgetId: this._hoveredWidgetId,
         zoom: this._zoom,
         scroll: this._scroll,
         activeTool: this._activeTool,
         interacting: this._interacting,
+        flowDragWidgetId: this._flowDragWidgetId,
+        flowDropIndex: this._flowDropIndex,
+        flowDragWidgetSize: this._flowDragWidgetSize,
       };
     }
     return this._snapshot;

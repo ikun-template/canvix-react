@@ -42,7 +42,7 @@ export function Toolbox({ ctx }: ToolboxProps) {
 
     const widget = widgetDefaults({
       type: def.type,
-      name: def.meta.name,
+      name: t(def.meta.name),
       position: { axis: [100, 100] },
       custom_data: def.defaultCustomData,
       ...def.defaultSchema,
@@ -101,7 +101,7 @@ export function Toolbox({ ctx }: ToolboxProps) {
                   className="hover:bg-accent flex flex-col items-center gap-1 rounded-lg p-2 text-xs transition-colors"
                 >
                   <Icon size={20} />
-                  <span>{def.meta.name}</span>
+                  <span>{t(def.meta.name)}</span>
                 </button>
               );
             })}

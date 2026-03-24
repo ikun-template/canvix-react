@@ -38,20 +38,25 @@ export function WidgetExplorer({ ctx }: WidgetExplorerProps) {
   }
 
   return (
-    <ul className="list-none p-0">
+    <ul className="flex list-none flex-col gap-1 p-0">
       {widgets.map(widget => {
         const def = ctx.registry.get(widget.type);
         const Icon = def?.meta.icon;
         const isSelected = snapshot.selectedWidgetIds.includes(widget.id);
+        const isHovered = !isSelected && snapshot.hoveredWidgetId === widget.id;
 
         return (
           <li
             key={widget.id}
             onClick={() => ctx.editorState.setSelection([widget.id])}
+            onPointerEnter={() => ctx.editorState.setHoveredWidget(widget.id)}
+            onPointerLeave={() => ctx.editorState.setHoveredWidget(null)}
             className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm ${
               isSelected
                 ? 'bg-accent text-accent-foreground font-medium'
-                : 'hover:bg-accent/50'
+                : isHovered
+                  ? 'bg-accent/60'
+                  : ''
             }`}
           >
             {Icon && (
