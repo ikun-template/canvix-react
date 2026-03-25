@@ -23,6 +23,9 @@ importers:
 
   apps/app-editor:
     dependencies:
+      '@canvix-react/chronicle':
+        specifier: workspace:*
+        version: link:../../domains/chronicle
       '@canvix-react/dock-editor':
         specifier: workspace:*
         version: link:../../docks/dock-editor

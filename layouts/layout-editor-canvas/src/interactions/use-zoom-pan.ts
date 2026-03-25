@@ -1,26 +1,52 @@
-import type { EditorDispatch } from '@canvix-react/toolkit-editor';
+import type { EditorRefContextValue } from '@canvix-react/toolkit-editor';
 import { useEffect, useRef } from 'react';
 
-import { ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './types.js';
+import { SCROLL_MARGIN_RATIO, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from './types.js';
 
 interface UseZoomPanOptions {
-  dispatch: EditorDispatch;
+  ref: EditorRefContextValue;
   canvasRef: React.RefObject<HTMLDivElement | null>;
   spaceHeldRef: React.RefObject<boolean>;
+  pageSize: [number, number];
+}
+
+function clampCamera(
+  cx: number,
+  cy: number,
+  canvas: HTMLElement,
+  pageW: number,
+  pageH: number,
+  zoom: number,
+): { x: number; y: number } {
+  const viewW = canvas.clientWidth / zoom;
+  const viewH = canvas.clientHeight / zoom;
+  const margin = Math.max(viewW, viewH) * SCROLL_MARGIN_RATIO;
+
+  function clampAxis(cam: number, viewSize: number, pageSize: number) {
+    const min = -margin;
+    const max = pageSize + margin - viewSize;
+    return min < max
+      ? Math.min(max, Math.max(min, cam))
+      : (pageSize - viewSize) / 2;
+  }
+
+  return {
+    x: clampAxis(cx, viewW, pageW),
+    y: clampAxis(cy, viewH, pageH),
+  };
 }
 
 export function useZoomPan({
-  dispatch,
+  ref,
   canvasRef,
   spaceHeldRef,
+  pageSize,
 }: UseZoomPanOptions) {
   const panStateRef = useRef<{
     active: boolean;
     pointerId: number;
-    originX: number;
-    originY: number;
-    startScrollX: number;
-    startScrollY: number;
+    lastX: number;
+    lastY: number;
   } | null>(null);
 
   useEffect(() => {
@@ -35,39 +61,37 @@ export function useZoomPan({
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
-      const snap = dispatch.getSnapshot();
+      const snap = ref.getSnapshot();
       const oldZoom = snap.zoom;
       const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
       const newZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, oldZoom + delta));
 
       if (newZoom === oldZoom) return;
 
-      // Adjust scroll to keep mouse position stable
-      const scroll = snap.scroll;
-      const scale = newZoom / oldZoom;
-      const newScrollX = mouseX - scale * (mouseX - scroll.x);
-      const newScrollY = mouseY - scale * (mouseY - scroll.y);
+      // Zoom-to-cursor in world space: keep the world point under cursor fixed
+      const camera = snap.camera;
+      const newCameraX = camera.x + mouseX * (1 / oldZoom - 1 / newZoom);
+      const newCameraY = camera.y + mouseY * (1 / oldZoom - 1 / newZoom);
 
-      dispatch.setZoom(newZoom);
-      dispatch.setScroll(newScrollX, newScrollY);
+      ref.batch(() => {
+        ref.setZoom(newZoom);
+        ref.setCamera(newCameraX, newCameraY);
+      });
     }
 
     canvas.addEventListener('wheel', onWheel, { passive: false });
     return () => canvas.removeEventListener('wheel', onWheel);
-  }, [dispatch, canvasRef]);
+  }, [ref, canvasRef, pageSize]);
 
   function startPan(e: PointerEvent) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const scroll = dispatch.getSnapshot().scroll;
     panStateRef.current = {
       active: true,
       pointerId: e.pointerId,
-      originX: e.clientX,
-      originY: e.clientY,
-      startScrollX: scroll.x,
-      startScrollY: scroll.y,
+      lastX: e.clientX,
+      lastY: e.clientY,
     };
 
     canvas.setPointerCapture(e.pointerId);
@@ -75,9 +99,22 @@ export function useZoomPan({
     function onMove(ev: PointerEvent) {
       const st = panStateRef.current;
       if (!st) return;
-      const dx = ev.clientX - st.originX;
-      const dy = ev.clientY - st.originY;
-      dispatch.setScroll(st.startScrollX + dx, st.startScrollY + dy);
+      const snap = ref.getSnapshot();
+      const { zoom, camera } = snap;
+      // Incremental screen delta → world-space displacement → camera moves inversely
+      const dx = (ev.clientX - st.lastX) / zoom;
+      const dy = (ev.clientY - st.lastY) / zoom;
+      st.lastX = ev.clientX;
+      st.lastY = ev.clientY;
+      const clamped = clampCamera(
+        camera.x - dx,
+        camera.y - dy,
+        canvas!,
+        pageSize[0],
+        pageSize[1],
+        zoom,
+      );
+      ref.setCamera(clamped.x, clamped.y);
     }
 
     function onUp() {

@@ -2,7 +2,7 @@ import type {
   LayoutPluginContext,
   TempSession,
 } from '@canvix-react/dock-editor';
-import type { EditorDispatch } from '@canvix-react/toolkit-editor';
+import type { EditorRefContextValue } from '@canvix-react/toolkit-editor';
 
 import type { HandleDirection } from './types.js';
 import { DRAG_THRESHOLD, MIN_WIDGET_SIZE } from './types.js';
@@ -59,7 +59,7 @@ interface DragResizeActive {
 
 export function createDragResize(
   ctx: LayoutPluginContext,
-  dispatch: EditorDispatch,
+  ref: EditorRefContextValue,
 ) {
   let pending: DragResizePending | null = null;
   let active: DragResizeActive | null = null;
@@ -70,7 +70,7 @@ export function createDragResize(
     handle: HandleDirection,
     pageId: string,
   ) {
-    dispatch.setInteracting(true);
+    ref.setInteracting(true);
 
     pending = {
       originX: e.clientX,
@@ -107,7 +107,7 @@ export function createDragResize(
 
     const isAbsolute = widget.mode === 'absolute';
     const session = ctx.beginTemp();
-    dispatch.setInteracting(true);
+    ref.setInteracting(true);
 
     active = {
       originX: pending.originX,
@@ -136,7 +136,7 @@ export function createDragResize(
 
     if (!active) return;
 
-    const zoom = dispatch.getSnapshot().zoom;
+    const zoom = ref.getSnapshot().zoom;
     const dx = (e.clientX - active.originX) / zoom;
     const dy = (e.clientY - active.originY) / zoom;
     const [fx, fy, fw, fh] = active.factors;
@@ -201,7 +201,7 @@ export function createDragResize(
     document.removeEventListener('pointermove', onMove);
     document.removeEventListener('pointerup', onEnd);
     document.removeEventListener('keydown', onKeyDown);
-    dispatch.setInteracting(false);
+    ref.setInteracting(false);
     pending = null;
     active = null;
   }

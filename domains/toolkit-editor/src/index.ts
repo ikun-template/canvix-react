@@ -1,34 +1,20 @@
-// Editor config context
-export {
-  EditorConfigContext,
-  EditorConfigProvider,
-  useI18n,
-  useTheme,
-  type EditorConfigContextValue,
-} from './context/editor-config.js';
-
-// Editor ref context
+// Editor ref context (includes config, state operations, useI18n, useTheme)
 export {
   EditorRefContext,
   EditorRefProvider,
   useEditorRef,
+  useI18n,
+  useTheme,
   type EditorRefContextValue,
+  type EditorConfig,
   type PluginMeta,
 } from './context/editor-ref.js';
 
 // Editor live context
 export {
-  EditorLiveContext,
   useEditorLive,
   type EditorLiveContextValue,
 } from './context/editor-live.js';
-
-// Editor dispatch context
-export {
-  EditorDispatchContext,
-  useEditorDispatch,
-  type EditorDispatch,
-} from './context/editor-dispatch.js';
 
 // Editor state store types
 export type {
@@ -36,8 +22,8 @@ export type {
   ToolType,
 } from './store/editor-state-store.js';
 
-// Editor providers
-export { EditorLiveProvider } from './providers/editor-live-provider.js';
+// Editor state store class (for App-level creation)
+export { EditorStateStore } from './store/editor-state-store.js';
 
 // Editor hooks
 export { useDocumentEditor } from './hooks/use-document-editor.js';

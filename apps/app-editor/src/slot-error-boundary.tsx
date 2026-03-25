@@ -1,5 +1,5 @@
 import type { Chronicle } from '@canvix-react/chronicle';
-import { useEditorDispatch } from '@canvix-react/toolkit-editor';
+import { useEditorRef } from '@canvix-react/toolkit-editor';
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 
@@ -91,8 +91,6 @@ class SlotErrorBoundaryInner extends Component<InnerProps, State> {
 }
 
 export function SlotErrorBoundary(props: SlotErrorBoundaryProps) {
-  const dispatch = useEditorDispatch();
-  return (
-    <SlotErrorBoundaryInner {...props} onEditorChange={dispatch.onChange} />
-  );
+  const ref = useEditorRef();
+  return <SlotErrorBoundaryInner {...props} onEditorChange={ref.onChange} />;
 }

@@ -8,7 +8,7 @@ import {
   useDocumentRef,
 } from '@canvix-react/toolkit-shared';
 import type { WidgetRegistry } from '@canvix-react/widget-registry';
-import { useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 
 import { computePlaceholderColor } from './color-contrast.js';
 
@@ -20,11 +20,21 @@ interface PageEditorProps {
 export function PageEditor({ ctx, registry }: PageEditorProps) {
   const { pageId, widgetIds } = usePageLive();
   const { getDocument } = useDocumentRef();
-  const { flowDragWidgetId, flowDropIndex, flowDragWidgetSize } =
-    useEditorLive();
+  const { flowDragWidgetId, flowDropIndex, flowDragWidgetSize } = useEditorLive(
+    'flowDragWidgetId',
+    'flowDropIndex',
+    'flowDragWidgetSize',
+  );
 
   const doc = getDocument();
   const page = doc.pages.find(p => p.id === pageId);
+
+  const pageFg = page?.foreground || '#fff';
+  const placeholderColor = useMemo(
+    () => computePlaceholderColor(pageFg),
+    [pageFg],
+  );
+
   if (!page) return null;
 
   const slotChildIds = new Set<string>();
@@ -37,12 +47,6 @@ export function PageEditor({ ctx, registry }: PageEditorProps) {
   }
 
   const rootWidgetIds = widgetIds.filter(id => !slotChildIds.has(id));
-
-  const pageFg = page.foreground || '#fff';
-  const placeholderColor = useMemo(
-    () => computePlaceholderColor(pageFg),
-    [pageFg],
-  );
 
   // During flow drag, the dragged widget is kept in the render tree
   // (so its React component stays mounted and visible on the ghost).
@@ -119,6 +123,7 @@ function FlowDropPlaceholder({
 }) {
   return (
     <div
+      data-flow-placeholder=""
       style={{
         width: size?.[0] ?? 100,
         height: size?.[1] ?? 40,
@@ -130,7 +135,7 @@ function FlowDropPlaceholder({
   );
 }
 
-function WidgetEditorWrapper({
+const WidgetEditorWrapper = memo(function WidgetEditorWrapper({
   widgetId,
   pageId,
   ctx,
@@ -160,7 +165,7 @@ function WidgetEditorWrapper({
       <WidgetEditor widgetId={widgetId} registry={registry} />
     </WidgetLiveProvider>
   );
-}
+});
 
 function WidgetEditor({
   widgetId,
@@ -169,10 +174,9 @@ function WidgetEditor({
   widgetId: string;
   registry: WidgetRegistry;
 }) {
-  useWidgetLive();
+  const { pageId } = useWidgetLive();
 
   const { getDocument } = useDocumentRef();
-  const { pageId } = usePageLive();
 
   const doc = getDocument();
   const page = doc.pages.find(p => p.id === pageId);

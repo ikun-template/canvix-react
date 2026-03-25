@@ -2,11 +2,17 @@ import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import {
   useChronicleSelective,
-  useEditorDispatch,
   useEditorLive,
+  useEditorRef,
 } from '@canvix-react/toolkit-editor';
 import { PageLiveProvider } from '@canvix-react/toolkit-shared';
-import { useCallback, useMemo, useRef, type PointerEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  type PointerEvent,
+} from 'react';
 
 import { computeStripeBackground } from './color-contrast.js';
 import { useCanvasPointer } from './interactions/use-canvas-pointer.js';
@@ -19,15 +25,22 @@ interface CanvasProps {
 }
 
 export function Canvas({ ctx }: CanvasProps) {
-  const dispatch = useEditorDispatch();
+  const ref = useEditorRef();
   const {
     activePageId,
     activeTool,
     zoom,
-    scroll,
+    camera,
     flowDragWidgetId,
     interacting,
-  } = useEditorLive();
+  } = useEditorLive(
+    'activePageId',
+    'activeTool',
+    'zoom',
+    'camera',
+    'flowDragWidgetId',
+    'interacting',
+  );
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const pageContainerRef = useRef<HTMLDivElement>(null);
@@ -45,11 +58,53 @@ export function Canvas({ ctx }: CanvasProps) {
   const doc = useChronicleSelective(shouldUpdate);
   const page = doc.pages.find(p => p.id === activePageId);
 
-  const { startPan } = useZoomPan({ dispatch, canvasRef, spaceHeldRef });
+  const { startPan } = useZoomPan({
+    ref,
+    canvasRef,
+    spaceHeldRef,
+    pageSize: page
+      ? [page.layout.size?.[0] ?? 0, page.layout.size?.[1] ?? 0]
+      : [0, 0],
+  });
+
+  // Center page in viewport when canvas gets valid size or page switches
+  const viewportReadyRef = useRef(false);
+  const centeredPageIdRef = useRef<string | null>(null);
+
+  const pageId = page?.id ?? null;
+  if (pageId !== centeredPageIdRef.current) {
+    viewportReadyRef.current = false;
+  }
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !page) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      const { width: vw, height: vh } = entry.contentRect;
+      if (vw === 0 || vh === 0) return;
+      observer.disconnect();
+
+      const pageEl = pageContainerRef.current;
+      if (!pageEl) return;
+      const { zoom: currentZoom } = ref.getSnapshot();
+
+      viewportReadyRef.current = true;
+      centeredPageIdRef.current = page.id;
+      // Camera = world-space coord of viewport top-left
+      const pageW = pageEl.offsetWidth;
+      const pageH = pageEl.offsetHeight;
+      const cameraX = pageW / 2 - vw / (2 * currentZoom);
+      const cameraY = pageH / 2 - vh / (2 * currentZoom);
+      ref.setCamera(cameraX, cameraY);
+    });
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [pageId, ref]);
 
   const { onPointerDown } = useCanvasPointer({
     ctx,
-    dispatch,
+    ref,
     pageId: page?.id ?? '',
     spaceHeldRef,
     startPan,
@@ -81,19 +136,19 @@ export function Canvas({ ctx }: CanvasProps) {
       while (target && target !== e.currentTarget) {
         const widgetId = target.getAttribute('data-widget-id');
         if (widgetId) {
-          dispatch.setHoveredWidget(widgetId);
+          ref.setHoveredWidget(widgetId);
           return;
         }
         target = target.parentElement;
       }
-      dispatch.setHoveredWidget(null);
+      ref.setHoveredWidget(null);
     },
-    [dispatch, interacting],
+    [ref, interacting],
   );
 
   const onPointerLeave = useCallback(() => {
-    dispatch.setHoveredWidget(null);
-  }, [dispatch]);
+    ref.setHoveredWidget(null);
+  }, [ref]);
 
   const isPanning = activeTool === 'hand' || spaceHeldRef.current;
   const cursor = isPanning ? 'grab' : 'default';
@@ -132,12 +187,14 @@ export function Canvas({ ctx }: CanvasProps) {
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
         style={{
+          boxSizing: 'border-box',
           width: page.layout.size?.[0],
           height: page.layout.size?.[1],
           background: page.foreground || '#fff',
           position: 'absolute',
           transformOrigin: '0 0',
-          transform: `translate(${scroll.x}px, ${scroll.y}px) scale(${zoom})`,
+          transform: `scale(${zoom}) translate(${-camera.x}px, ${-camera.y}px)`,
+          visibility: viewportReadyRef.current ? 'visible' : 'hidden',
           display: 'flex',
           flexDirection: page.layout.direction,
           flexWrap: page.layout.wrap,

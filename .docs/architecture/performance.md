@@ -97,7 +97,7 @@ class IdleQueue {
 
 优先挂载视口内可见的 widget，视口外的 widget 延后挂载：
 
-1. 根据 Canvas 当前 scroll 位置和 zoom 计算可见区域
+1. 根据 Canvas 当前 camera 位置和 zoom 计算可见区域
 2. 将 widget 按是否在可见区域内分为两组
 3. 可见组立即进入空闲队列（高优先），不可见组追加在后
 

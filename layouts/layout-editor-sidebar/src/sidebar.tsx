@@ -1,7 +1,7 @@
 import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import { Plus } from '@canvix-react/icon';
 import { pageDefaults } from '@canvix-react/schema-page';
-import { useEditorDispatch, useI18n } from '@canvix-react/toolkit-editor';
+import { useEditorRef, useI18n } from '@canvix-react/toolkit-editor';
 import { useCallback, useRef } from 'react';
 
 import { PageExplorer } from './page-explorer.js';
@@ -14,7 +14,7 @@ interface SidebarProps {
 
 export function Sidebar({ ctx }: SidebarProps) {
   const { t } = useI18n();
-  const dispatch = useEditorDispatch();
+  const ref = useEditorRef();
   const containerRef = useRef<HTMLDivElement>(null);
   const { topHeight, handleProps } = useResizeHandle({ containerRef });
 
@@ -32,8 +32,8 @@ export function Sidebar({ ctx }: SidebarProps) {
         },
       ],
     });
-    dispatch.setActivePage(page.id);
-  }, [ctx, dispatch]);
+    ref.setActivePage(page.id);
+  }, [ctx, ref]);
 
   return (
     <div ref={containerRef} className="flex h-full flex-col overflow-hidden">

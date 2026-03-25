@@ -22,7 +22,12 @@ interface WidgetBounds {
 
 export function SelectionOverlay({ pageContainerRef }: SelectionOverlayProps) {
   const { selectedWidgetIds, hoveredWidgetId, interacting, flowDragWidgetId } =
-    useEditorLive();
+    useEditorLive(
+      'selectedWidgetIds',
+      'hoveredWidgetId',
+      'interacting',
+      'flowDragWidgetId',
+    );
 
   const [bounds, setBounds] = useState<WidgetBounds[]>([]);
   const [hoverBounds, setHoverBounds] = useState<WidgetBounds | null>(null);

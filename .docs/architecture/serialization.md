@@ -70,7 +70,7 @@ Base64 字符串
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 ```
 
-保存状态由 EditorState 管理，UI 层可订阅展示保存指示器。
+保存状态由应用层管理，UI 层可订阅展示保存指示器。
 
 ### 手动保存
 

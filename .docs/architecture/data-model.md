@@ -34,15 +34,17 @@ Page.widgets[]          ← 存储所有 widget 数据（不论嵌套深度）
 ## 数据分层
 
 ```
-┌─────────────────────────────────────┐
-│         Editor State (编辑状态)       │ ← 仅编辑器运行时使用，不持久化到 Schema
-│  activePage, zoom, scroll, selection │
-└──────────────┬──────────────────────┘
-               │ 读写
-┌──────────────▼──────────────────────┐
-│         Schema (渲染数据)             │ ← 持久化，驱动渲染输出
-│  Document → Page[] → Widget[]        │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│     Editor State (编辑状态, EditorStateStore)          │ ← 仅编辑器运行时，不持久化
+│  activePageId, zoom, camera, selection, hover, tool   │
+│  由 App 层创建，注入 EditorRefContext                   │
+│  通过 useEditorRef() 写入 / useEditorLive() 消费       │
+└──────────────────┬───────────────────────────────────┘
+                   │ 读写
+┌──────────────────▼───────────────────────────────────┐
+│     Schema (渲染数据, Chronicle)                       │ ← 持久化，驱动渲染输出
+│  Document → Page[] → Widget[]                         │
+└──────────────────────────────────────────────────────┘
 ```
 
 - **Schema**：描述"最终产物长什么样"，序列化/反序列化的对象，编辑器和查看器共用
@@ -74,7 +76,20 @@ interface Page {
   layout?: {
     /** 画布尺寸 */
     size?: [width: number, height: number];
+    /** flex 方向 */
+    direction?: 'row' | 'column';
+    /** flex 换行 */
+    wrap?: 'nowrap' | 'wrap';
+    /** flex 间距 */
+    gap?: number;
+    /** flex 交叉轴对齐 */
+    align?: 'start' | 'center' | 'end' | 'stretch';
+    /** flex 主轴分布 */
+    justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
+    /** 内边距 [top, right, bottom, left] */
+    padding?: [number, number, number, number];
   };
+  foreground?: string;
   background?: string;
   /** 扁平存储本页所有 widget（不论嵌套深度），数组顺序即渲染顺序 */
   widgets?: Widget[];
@@ -121,27 +136,26 @@ interface Widget<CustomData = unknown> {
 
 ## Editor State 定义
 
-编辑状态独立于 Schema，仅在编辑器运行时存在：
+编辑状态独立于 Schema，仅在编辑器运行时存在。由 `EditorStateStore`（轻量 external store）管理，在 App 层创建并注入 `EditorRefContext`，不在 dock-editor Runtime 中：
 
 ```typescript
-interface EditorState {
-  /** 当前激活页面 ID */
-  activePage?: string;
-  /** 各页面的编辑视图状态，key 为 page id */
-  pageStates?: Record<string, PageEditorState>;
-  /** 当前选中的 widget id 集合 */
-  selection?: string[];
-}
-
-interface PageEditorState {
-  zoom?: number;
-  scroll?: [x: number, y: number];
+interface EditorStateSnapshot {
+  activePageId: string;
+  selectedWidgetIds: string[];
+  hoveredWidgetId: string | null;
+  activeTool: ToolType; // 'select' | 'hand'
+  interacting: boolean; // 拖拽/resize 进行中
+  zoom: number;
+  camera: { x: number; y: number };
+  flowDragWidgetId: string | null;
+  flowDropIndex: number | null;
+  flowDragWidgetSize: [number, number] | null;
 }
 ```
 
 - Editor State 不参与文档序列化，不随文档保存/传输
 - Editor State 可选择性持久化到本地存储（如记住用户上次的缩放比例），但这属于编辑器偏好，不属于文档数据
-- Editor State 同样由缺省服务管理，全字段可选
+- 通过 `useEditorLive()` 响应式消费，通过 `useEditorRef()` 命令式写入
 
 ---
 
@@ -170,6 +184,13 @@ const page = pageDefaults({ name: '首页' });
 | Page     | id                 | `nanoid(6)`                   |
 | Page     | name               | `''`                          |
 | Page     | layout.size        | `[1920, 1080]`                |
+| Page     | layout.direction   | `'column'`                    |
+| Page     | layout.wrap        | `'nowrap'`                    |
+| Page     | layout.gap         | `0`                           |
+| Page     | layout.align       | `'start'`                     |
+| Page     | layout.justify     | `'start'`                     |
+| Page     | layout.padding     | `[0, 0, 0, 0]`                |
+| Page     | foreground         | `''`                          |
 | Page     | background         | `''`                          |
 | Page     | widgets            | `[]`                          |
 | Widget   | schema             | `'0.1.0'`                     |
@@ -187,13 +208,18 @@ const page = pageDefaults({ name: '首页' });
 
 ### Editor State 默认值
 
-| 字段                   | 默认值                           |
-| ---------------------- | -------------------------------- |
-| activePage             | 首个 page 的 id，无 page 则 `''` |
-| pageStates             | `{}`                             |
-| selection              | `[]`                             |
-| PageEditorState.zoom   | `1`                              |
-| PageEditorState.scroll | `[0, 0]`                         |
+| 字段               | 默认值                                        |
+| ------------------ | --------------------------------------------- |
+| activePageId       | 由 App 层创建 store 时的 `initialPageId` 决定 |
+| selectedWidgetIds  | `[]`                                          |
+| hoveredWidgetId    | `null`                                        |
+| activeTool         | `'select'`                                    |
+| interacting        | `false`                                       |
+| zoom               | `1`                                           |
+| camera             | `{ x: 0, y: 0 }`                              |
+| flowDragWidgetId   | `null`                                        |
+| flowDropIndex      | `null`                                        |
+| flowDragWidgetSize | `null`                                        |
 
 ---
 
@@ -261,6 +287,6 @@ schemas/
     └── src/
 ```
 
-Editor State 不单独成包，由 `dock-editor` 内部管理。
+Editor State 由 `toolkit-editor` 的 `EditorStateStore` 管理，不在 dock-editor 中。
 
 依赖方向：`schema-document` → `schema-page` → `schema-widget`（单向）。

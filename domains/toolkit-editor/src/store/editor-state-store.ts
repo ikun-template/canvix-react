@@ -7,7 +7,7 @@ export interface EditorStateSnapshot {
   selectedWidgetIds: string[];
   hoveredWidgetId: string | null;
   zoom: number;
-  scroll: { x: number; y: number };
+  camera: { x: number; y: number };
   activeTool: ToolType;
   interacting: boolean;
   flowDragWidgetId: string | null;
@@ -23,7 +23,7 @@ export class EditorStateStore {
   private _activePageId = '';
   private _selectedWidgetIds: string[] = [];
   private _zoom = 1;
-  private _scroll = { x: 0, y: 0 };
+  private _camera = { x: 0, y: 0 };
   private _activeTool: ToolType = 'select';
   private _interacting = false;
   private _hoveredWidgetId: string | null = null;
@@ -32,6 +32,8 @@ export class EditorStateStore {
   private _flowDragWidgetSize: [number, number] | null = null;
   private _snapshot: EditorStateSnapshot | null = null;
   private listeners = new Set<StateListener>();
+  private _batching = false;
+  private _batchDirty = false;
 
   constructor(options?: EditorStateStoreOptions) {
     if (options?.initialPageId) {
@@ -55,8 +57,8 @@ export class EditorStateStore {
     this.notify();
   }
 
-  setScroll(x: number, y: number) {
-    this._scroll = { x, y };
+  setCamera(x: number, y: number) {
+    this._camera = { x, y };
     this.notify();
   }
 
@@ -97,7 +99,7 @@ export class EditorStateStore {
         selectedWidgetIds: this._selectedWidgetIds,
         hoveredWidgetId: this._hoveredWidgetId,
         zoom: this._zoom,
-        scroll: this._scroll,
+        camera: this._camera,
         activeTool: this._activeTool,
         interacting: this._interacting,
         flowDragWidgetId: this._flowDragWidgetId,
@@ -116,7 +118,25 @@ export class EditorStateStore {
     };
   };
 
+  /** Batch multiple mutations into a single notification. */
+  batch(fn: () => void) {
+    this._batching = true;
+    this._batchDirty = false;
+    fn();
+    this._batching = false;
+    if (this._batchDirty) {
+      this._batchDirty = false;
+      this._snapshot = null;
+      for (const listener of this.listeners) listener();
+    }
+  }
+
   private notify() {
+    if (this._batching) {
+      this._batchDirty = true;
+      this._snapshot = null;
+      return;
+    }
     this._snapshot = null;
     for (const fn of this.listeners) fn();
   }

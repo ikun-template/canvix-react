@@ -1,5 +1,5 @@
 import type { LayoutPluginContext } from '@canvix-react/dock-editor';
-import type { EditorDispatch } from '@canvix-react/toolkit-editor';
+import type { EditorRefContextValue } from '@canvix-react/toolkit-editor';
 
 import type { Point } from './types.js';
 import { DRAG_THRESHOLD } from './types.js';
@@ -34,13 +34,13 @@ interface FlowDragActive {
 
 export function createFlowDragMove(
   ctx: LayoutPluginContext,
-  dispatch: EditorDispatch,
+  ref: EditorRefContextValue,
 ) {
   let pending: FlowDragPending | null = null;
   let active: FlowDragActive | null = null;
 
   function start(e: PointerEvent, widgetId: string, pageId: string) {
-    dispatch.setInteracting(true);
+    ref.setInteracting(true);
 
     pending = {
       origin: { x: e.clientX, y: e.clientY },
@@ -108,9 +108,9 @@ export function createFlowDragMove(
     widgetEl.style.pointerEvents = 'none';
     widgetEl.setAttribute('data-drag-source', '');
 
-    dispatch.setFlowDrag(pending.widgetId, [width, height]);
-    dispatch.setFlowDropIndex(originalIndex);
-    dispatch.setInteracting(true);
+    ref.setFlowDrag(pending.widgetId, [width, height]);
+    ref.setFlowDropIndex(originalIndex);
+    ref.setInteracting(true);
 
     active = {
       origin: pending.origin,
@@ -139,7 +139,7 @@ export function createFlowDragMove(
 
     if (!active) return;
 
-    const zoom = dispatch.getSnapshot().zoom;
+    const zoom = ref.getSnapshot().zoom;
     const dx = (e.clientX - active.origin.x) / zoom;
     const dy = (e.clientY - active.origin.y) / zoom;
 
@@ -147,13 +147,15 @@ export function createFlowDragMove(
     active.widgetEl.style.top = `${active.initialTop + dy}px`;
 
     const dropIndex = computeDropIndex(e, active);
-    dispatch.setFlowDropIndex(dropIndex);
+    ref.setFlowDropIndex(dropIndex);
   }
 
   function computeDropIndex(e: PointerEvent, s: FlowDragActive): number {
     const doc = ctx.chronicle.getDocument();
     const page = doc.pages.find((p: { id: string }) => p.id === s.pageId);
     if (!page) return s.originalIndex;
+
+    const isRow = page.layout.direction === 'row';
 
     // Build set of slot children
     const slotChildIds = new Set<string>();
@@ -165,31 +167,87 @@ export function createFlowDragMove(
       }
     }
 
-    // Get flow elements (excluding drag source)
+    // ── Step 1: Remove old placeholder from flex flow ──
+    // This gives us stable element positions unaffected by the placeholder.
+    // display:none → read positions → display:'' happens within one JS task,
+    // so the browser won't paint the hidden state.
+    const placeholderEl = s.pageContainer.querySelector<HTMLElement>(
+      '[data-flow-placeholder]',
+    );
+    if (placeholderEl) placeholderEl.style.display = 'none';
+
+    // ── Step 2: Snapshot + compute ──
     const flowEls = Array.from(
       s.pageContainer.querySelectorAll<HTMLElement>(
         '[data-widget-id]:not([data-drag-source])',
       ),
     );
 
-    // Convert pointer to page-container coordinates
     const containerRect = s.pageContainer.getBoundingClientRect();
-    const zoom = dispatch.getSnapshot().zoom;
+    const zoom = ref.getSnapshot().zoom;
+    const pointerX = (e.clientX - containerRect.left) / zoom;
     const pointerY = (e.clientY - containerRect.top) / zoom;
 
-    // Find visual insertion index among flow elements
-    let visualIndex = flowEls.length;
-    for (let i = 0; i < flowEls.length; i++) {
-      const el = flowEls[i];
-      const midY = el.offsetTop + el.offsetHeight / 2;
-      if (pointerY < midY) {
-        visualIndex = i;
+    // Group elements into lines by cross-axis position
+    const lines: HTMLElement[][] = [];
+    let currentLine: HTMLElement[] = [];
+    let currentCross = -Infinity;
+    for (const el of flowEls) {
+      const cross = isRow ? el.offsetTop : el.offsetLeft;
+      if (currentLine.length === 0 || Math.abs(cross - currentCross) < 2) {
+        currentLine.push(el);
+        currentCross = cross;
+      } else {
+        lines.push(currentLine);
+        currentLine = [el];
+        currentCross = cross;
+      }
+    }
+    if (currentLine.length > 0) lines.push(currentLine);
+
+    // Find which line the pointer is in
+    const pointerCross = isRow ? pointerY : pointerX;
+    let targetLine = lines[lines.length - 1] ?? [];
+    let lineStartIndex = 0;
+    let accumulated = 0;
+    for (const line of lines) {
+      const firstEl = line[0];
+      const lastEl = line[line.length - 1];
+      const crossStart = isRow ? firstEl.offsetTop : firstEl.offsetLeft;
+      const crossEnd = isRow
+        ? lastEl.offsetTop + lastEl.offsetHeight
+        : lastEl.offsetLeft + lastEl.offsetWidth;
+      const crossMid = (crossStart + crossEnd) / 2;
+      if (pointerCross < crossMid) {
+        targetLine = line;
+        lineStartIndex = accumulated;
+        break;
+      }
+      accumulated += line.length;
+      lineStartIndex = accumulated;
+      targetLine = line;
+    }
+
+    // Find insertion point within the target line
+    const pointerMain = isRow ? pointerX : pointerY;
+    let inLineIndex = targetLine.length;
+    for (let i = 0; i < targetLine.length; i++) {
+      const el = targetLine[i];
+      const mid = isRow
+        ? el.offsetLeft + el.offsetWidth / 2
+        : el.offsetTop + el.offsetHeight / 2;
+      if (pointerMain < mid) {
+        inLineIndex = i;
         break;
       }
     }
 
+    // ── Step 3: Restore placeholder ──
+    if (placeholderEl) placeholderEl.style.display = '';
+
+    const visualIndex = lineStartIndex + inLineIndex;
+
     // Map visual index to page.widgets full array index
-    // Build ordered list of root widget indices (excluding dragged widget)
     const rootIndices: number[] = [];
     for (let i = 0; i < page.widgets.length; i++) {
       const w = page.widgets[i];
@@ -199,7 +257,6 @@ export function createFlowDragMove(
     }
 
     if (visualIndex >= rootIndices.length) {
-      // Insert after the last root widget
       const lastRootIdx = rootIndices[rootIndices.length - 1];
       return lastRootIdx !== undefined ? lastRootIdx + 1 : s.originalIndex;
     }
@@ -214,7 +271,7 @@ export function createFlowDragMove(
     }
     if (!active) return;
 
-    const dropIndex = dispatch.getSnapshot().flowDropIndex;
+    const dropIndex = ref.getSnapshot().flowDropIndex;
 
     if (dropIndex !== null && dropIndex !== active.originalIndex) {
       // Adjust target index for array move semantics:
@@ -254,10 +311,10 @@ export function createFlowDragMove(
       s.widgetEl.style.pointerEvents = s.originalStyle.pointerEvents;
       s.widgetEl.removeAttribute('data-drag-source');
 
-      dispatch.setFlowDrag(null);
+      ref.setFlowDrag(null);
     }
 
-    dispatch.setInteracting(false);
+    ref.setInteracting(false);
 
     document.removeEventListener('pointermove', onMove);
     document.removeEventListener('pointerup', onEnd);

@@ -2,8 +2,8 @@ import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import { Hand, MousePointer2, Plus } from '@canvix-react/icon';
 import { widgetDefaults } from '@canvix-react/schema-widget';
 import {
-  useEditorDispatch,
   useEditorLive,
+  useEditorRef,
   useI18n,
   type ToolType,
 } from '@canvix-react/toolkit-editor';
@@ -32,15 +32,17 @@ const TOOLBAR_TOOLS = [
 
 export function Toolbox({ ctx }: ToolboxProps) {
   const { t } = useI18n();
-  const dispatch = useEditorDispatch();
+  const ref = useEditorRef();
   const definitions = ctx.registry.getAll();
   const [popoverOpen, setPopoverOpen] = useState(false);
 
-  const snapshot = useEditorLive();
-  const activeTool = snapshot.activeTool;
+  const { activeTool, activePageId } = useEditorLive(
+    'activeTool',
+    'activePageId',
+  );
 
   function addWidget(def: WidgetDefinition) {
-    const pageId = snapshot.activePageId;
+    const pageId = activePageId;
     if (!pageId) return;
 
     const page = ctx.chronicle.getDocument().pages.find(p => p.id === pageId);
@@ -77,7 +79,7 @@ export function Toolbox({ ctx }: ToolboxProps) {
           size="icon"
           className={`h-8 w-8 ${activeTool === id ? 'bg-accent text-accent-foreground' : ''}`}
           title={t(labelKey)}
-          onClick={() => dispatch.setActiveTool(id)}
+          onClick={() => ref.setActiveTool(id)}
         >
           <Icon size={16} />
         </Button>

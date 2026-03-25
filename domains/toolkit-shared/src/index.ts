@@ -27,6 +27,10 @@ export { DocumentLiveProvider } from './providers/document-live-provider.js';
 export { PageLiveProvider } from './providers/page-live-provider.js';
 export { WidgetLiveProvider } from './providers/widget-live-provider.js';
 
+// Utils
+export { shallowEqual } from './utils/shallow-equal.js';
+export { useSelectiveStore } from './utils/use-selective-store.js';
+
 // Reader hooks
 export { useDocumentReader } from './hooks/use-document-reader.js';
 export { usePageReader } from './hooks/use-page-reader.js';

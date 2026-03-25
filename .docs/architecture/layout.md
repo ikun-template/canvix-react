@@ -68,7 +68,7 @@ Dock 容器在 DOM 中预留具名挂载点，布局插件在 mount 阶段将 Re
 </div>
 ```
 
-布局插件通过 `PluginContext` 获取挂载点引用，不硬编码 DOM 查询。
+布局插件通过 `LayoutPluginContext` 获取挂载点引用，不硬编码 DOM 查询。
 
 ---
 
@@ -104,7 +104,7 @@ Toolbox: 用户拖拽组件
 
 ```
 Sidebar: 用户点击页面
-  → 调用 EditorState: setActivePage('p2')
+  → 调用 dispatch.setActivePage('p2')
   → 触发 hook: page:switched
   → Canvas: 响应，渲染新页面的 widget 列表
   → Inspector: 响应，清空属性面板
@@ -125,7 +125,7 @@ Dock 容器负责布局区域的空间分配：
 ### 面板显隐
 
 - 各区域支持折叠/展开
-- 折叠状态由 EditorState 管理，持久化到本地存储
+- 折叠状态持久化到本地存储
 - 未注册的布局区域对应的挂载点不渲染，不影响其他区域
 
 ---

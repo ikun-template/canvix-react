@@ -2,8 +2,8 @@ import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import {
   useChronicleSelective,
-  useEditorDispatch,
   useEditorLive,
+  useEditorRef,
   useI18n,
 } from '@canvix-react/toolkit-editor';
 
@@ -24,8 +24,12 @@ const shouldUpdate = (model: OperationModel) => {
 
 export function WidgetExplorer({ ctx }: WidgetExplorerProps) {
   const { t } = useI18n();
-  const dispatch = useEditorDispatch();
-  const snapshot = useEditorLive();
+  const ref = useEditorRef();
+  const snapshot = useEditorLive(
+    'activePageId',
+    'selectedWidgetIds',
+    'hoveredWidgetId',
+  );
 
   const doc = useChronicleSelective(shouldUpdate);
   const page = doc.pages.find(p => p.id === snapshot.activePageId);
@@ -50,9 +54,9 @@ export function WidgetExplorer({ ctx }: WidgetExplorerProps) {
         return (
           <li
             key={widget.id}
-            onClick={() => dispatch.setSelection([widget.id])}
-            onPointerEnter={() => dispatch.setHoveredWidget(widget.id)}
-            onPointerLeave={() => dispatch.setHoveredWidget(null)}
+            onClick={() => ref.setSelection([widget.id])}
+            onPointerEnter={() => ref.setHoveredWidget(widget.id)}
+            onPointerLeave={() => ref.setHoveredWidget(null)}
             className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm ${
               isSelected
                 ? 'bg-accent text-accent-foreground font-medium'

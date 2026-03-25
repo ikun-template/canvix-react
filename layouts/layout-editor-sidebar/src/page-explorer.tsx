@@ -2,8 +2,8 @@ import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import {
   useChronicleSelective,
-  useEditorDispatch,
   useEditorLive,
+  useEditorRef,
 } from '@canvix-react/toolkit-editor';
 
 interface PageExplorerProps {
@@ -19,8 +19,8 @@ const shouldUpdate = (model: OperationModel) => {
 };
 
 export function PageExplorer({ ctx }: PageExplorerProps) {
-  const dispatch = useEditorDispatch();
-  const { activePageId } = useEditorLive();
+  const ref = useEditorRef();
+  const activePageId = useEditorLive('activePageId');
 
   const doc = useChronicleSelective(shouldUpdate);
 
@@ -31,7 +31,7 @@ export function PageExplorer({ ctx }: PageExplorerProps) {
         return (
           <li
             key={page.id}
-            onClick={() => dispatch.setActivePage(page.id)}
+            onClick={() => ref.setActivePage(page.id)}
             className={`cursor-pointer rounded px-2 py-1 text-sm ${
               isActive
                 ? 'bg-accent text-accent-foreground font-medium'

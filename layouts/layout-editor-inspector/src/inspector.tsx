@@ -10,7 +10,10 @@ interface InspectorProps {
 }
 
 export function Inspector({ ctx }: InspectorProps) {
-  const { selectedWidgetIds: selected, activePageId: pageId } = useEditorLive();
+  const { selectedWidgetIds: selected, activePageId: pageId } = useEditorLive(
+    'selectedWidgetIds',
+    'activePageId',
+  );
 
   return (
     <InspectorColorPickerProvider>
@@ -28,11 +31,11 @@ function InspectorContent({
   selected: string[];
   pageId: string;
 }) {
+  const { t } = useI18n();
+
   if (selected.length === 0) {
     return <InspectorPage ctx={ctx} pageId={pageId} />;
   }
-
-  const { t } = useI18n();
 
   if (selected.length > 1) {
     return (

@@ -1,4 +1,4 @@
-import { useEffect, useReducer, type ReactNode } from 'react';
+import { useEffect, useMemo, useReducer, type ReactNode } from 'react';
 
 import { useDocumentRef } from '../context/document-ref.js';
 import {
@@ -25,20 +25,20 @@ export function PageLiveProvider({
     return subscribe(bump);
   }, [subscribe]);
 
-  const doc = getDocument();
-  const page = doc.pages.find(p => p.id === pageId);
-
-  const value: PageLiveContextValue | null = page
-    ? {
-        pageId: page.id,
-        name: page.name,
-        layout: page.layout,
-        foreground: page.foreground,
-        background: page.background,
-        widgetIds: page.widgets.map(w => w.id),
-        version,
-      }
-    : null;
+  const value = useMemo<PageLiveContextValue | null>(() => {
+    const doc = getDocument();
+    const page = doc.pages.find(p => p.id === pageId);
+    if (!page) return null;
+    return {
+      pageId: page.id,
+      name: page.name,
+      layout: page.layout,
+      foreground: page.foreground,
+      background: page.background,
+      widgetIds: page.widgets.map(w => w.id),
+      version,
+    };
+  }, [getDocument, pageId, version]);
 
   if (!value) return null;
 

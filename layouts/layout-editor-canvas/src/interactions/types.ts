@@ -29,6 +29,7 @@ export const ZOOM_MIN = 0.1;
 export const ZOOM_MAX = 5;
 export const ZOOM_STEP = 0.05;
 export const DRAG_THRESHOLD = 4;
+export const SCROLL_MARGIN_RATIO = 1.0;
 
 export const HANDLE_CURSORS: Record<HandleDirection, string> = {
   nw: 'nwse-resize',

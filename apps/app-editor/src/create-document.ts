@@ -8,6 +8,10 @@ export function createDefaultDocument() {
     pages: [
       pageDefaults({
         name: 'Page 1',
+        layout: {
+          direction: 'row',
+          wrap: 'wrap',
+        },
         widgets: [
           widgetDefaults({
             type: 'text',
@@ -25,7 +29,79 @@ export function createDefaultDocument() {
             type: 'shape',
             name: 'Rect',
             position: { axis: [400, 100] },
-            layout: { size: [150, 150] },
+            layout: { size: [150, 180] },
+            custom_data: {
+              shape: 'rect',
+              fill: '#4f9cf5',
+              stroke: '',
+              strokeWidth: 0,
+              borderRadius: 8,
+            },
+          }),
+          widgetDefaults({
+            type: 'image',
+            name: 'Image',
+            position: { axis: [100, 250] },
+            layout: { size: [200, 150] },
+            custom_data: {
+              src: '',
+              alt: 'Placeholder',
+              fit: 'cover',
+            },
+          }),
+          widgetDefaults({
+            type: 'shape',
+            name: 'Rect',
+            position: { axis: [400, 100] },
+            layout: { size: [150, 180] },
+            custom_data: {
+              shape: 'rect',
+              fill: '#4f9cf5',
+              stroke: '',
+              strokeWidth: 0,
+              borderRadius: 8,
+            },
+          }),
+          widgetDefaults({
+            type: 'image',
+            name: 'Image',
+            position: { axis: [100, 250] },
+            layout: { size: [200, 150] },
+            custom_data: {
+              src: '',
+              alt: 'Placeholder',
+              fit: 'cover',
+            },
+          }),
+          widgetDefaults({
+            type: 'shape',
+            name: 'Rect',
+            position: { axis: [400, 100] },
+            layout: { size: [150, 180] },
+            custom_data: {
+              shape: 'rect',
+              fill: '#4f9cf5',
+              stroke: '',
+              strokeWidth: 0,
+              borderRadius: 8,
+            },
+          }),
+          widgetDefaults({
+            type: 'image',
+            name: 'Image',
+            position: { axis: [100, 250] },
+            layout: { size: [200, 150] },
+            custom_data: {
+              src: '',
+              alt: 'Placeholder',
+              fit: 'cover',
+            },
+          }),
+          widgetDefaults({
+            type: 'shape',
+            name: 'Rect',
+            position: { axis: [400, 100] },
+            layout: { size: [150, 180] },
             custom_data: {
               shape: 'rect',
               fill: '#4f9cf5',

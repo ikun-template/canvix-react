@@ -1,5 +1,5 @@
 import type { LayoutPluginContext } from '@canvix-react/dock-editor';
-import type { EditorDispatch } from '@canvix-react/toolkit-editor';
+import type { EditorRefContextValue } from '@canvix-react/toolkit-editor';
 import { useCallback, useRef } from 'react';
 
 import type { HandleDirection } from './types.js';
@@ -9,7 +9,7 @@ import { createFlowDragMove } from './use-flow-drag.js';
 
 interface UseCanvasPointerOptions {
   ctx: LayoutPluginContext;
-  dispatch: EditorDispatch;
+  ref: EditorRefContextValue;
   pageId: string;
   spaceHeldRef: React.RefObject<boolean>;
   startPan: (e: PointerEvent) => void;
@@ -17,7 +17,7 @@ interface UseCanvasPointerOptions {
 
 export function useCanvasPointer({
   ctx,
-  dispatch,
+  ref,
   pageId,
   spaceHeldRef,
   startPan,
@@ -31,11 +31,10 @@ export function useCanvasPointer({
   );
 
   // Lazily create factories
-  if (!dragMoveRef.current) dragMoveRef.current = createDragMove(ctx, dispatch);
+  if (!dragMoveRef.current) dragMoveRef.current = createDragMove(ctx, ref);
   if (!dragResizeRef.current)
-    dragResizeRef.current = createDragResize(ctx, dispatch);
-  if (!flowDragRef.current)
-    flowDragRef.current = createFlowDragMove(ctx, dispatch);
+    dragResizeRef.current = createDragResize(ctx, ref);
+  if (!flowDragRef.current) flowDragRef.current = createFlowDragMove(ctx, ref);
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -46,10 +45,7 @@ export function useCanvasPointer({
       const target = e.target as HTMLElement;
 
       // 1. Space held or hand tool → pan
-      if (
-        spaceHeldRef.current ||
-        dispatch.getSnapshot().activeTool === 'hand'
-      ) {
+      if (spaceHeldRef.current || ref.getSnapshot().activeTool === 'hand') {
         startPan(nativeEvent);
         return;
       }
@@ -78,22 +74,20 @@ export function useCanvasPointer({
       const widgetEl = target.closest<HTMLElement>('[data-widget-id]');
       if (widgetEl) {
         const widgetId = widgetEl.dataset.widgetId!;
-        const currentSelection = dispatch.getSnapshot().selectedWidgetIds;
+        const currentSelection = ref.getSnapshot().selectedWidgetIds;
 
         if (e.shiftKey) {
           // Toggle selection
           const isSelected = currentSelection.includes(widgetId);
           if (isSelected) {
-            dispatch.setSelection(
-              currentSelection.filter(id => id !== widgetId),
-            );
+            ref.setSelection(currentSelection.filter(id => id !== widgetId));
           } else {
-            dispatch.setSelection([...currentSelection, widgetId]);
+            ref.setSelection([...currentSelection, widgetId]);
           }
         } else {
           // If widget is not in current selection, select only it
           if (!currentSelection.includes(widgetId)) {
-            dispatch.setSelection([widgetId]);
+            ref.setSelection([widgetId]);
           }
 
           // Check widget mode to dispatch drag type
@@ -119,9 +113,9 @@ export function useCanvasPointer({
       }
 
       // 4. Hit empty space → clear selection
-      dispatch.setSelection([]);
+      ref.setSelection([]);
     },
-    [ctx, dispatch, pageId, spaceHeldRef, startPan],
+    [ctx, ref, pageId, spaceHeldRef, startPan],
   );
 
   return { onPointerDown };
