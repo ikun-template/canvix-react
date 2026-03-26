@@ -2,7 +2,7 @@
 
 > 文档持久化、保存功能、快捷键系统、插件架构实现、职责下沉。
 
-## 状态：已完成
+## 状态：进行中（遗留 3.9 / 3.10）
 
 ## 前置：Phase 2 基础重构完成
 
@@ -128,6 +128,30 @@ new DockEditor({
 });
 ```
 
+### 3.9 依赖方向违规：domains → dock
+
+**问题**：`toolkit-editor/src/store/editor-state-store.ts` 从 `@canvix-react/dock-editor` 重导出 `EditorStateStore`。domains 包不可依赖 dock——dock 是底座，只能它依赖别的包，不能反过来。
+
+**现状**：Phase 3 将 `EditorStateStore` 迁入了 dock-editor，然后 toolkit-editor 做重导出。方向反了。
+
+**解法**：`EditorStateStore` 应该放在 domains 层（如 `toolkit-editor` 自身或独立包），dock-editor 从 domains 导入。底座组装 domains 提供的能力，而非 domains 去取底座的实现。
+
+### 3.10 快捷键不应是 ServicePlugin，基础设施类应抽到 packages
+
+**问题 A**：快捷键是编辑器的基础能力，不是"可插拔的服务"。用 ServicePlugin 模式增加了不必要的抽象层。应该是 Runtime 的内置能力，直接在初始化时注册，不走 ServicePlugin 生命周期。
+
+**问题 B**：`EventBus`、`HookSystem`、`ShortcutManager` 都是通用基础设施类，当前全部定义在 `docks/dock-editor/src/runtime/`。这些是可复用的工具，应该抽到 `packages/` 层：
+
+| 类 | 当前位置 | 应该在 |
+|---|---------|--------|
+| `EventBus` | `dock-editor/runtime/event-bus.ts` | `packages/` 层 |
+| `HookSystem` | `dock-editor/runtime/hook-system.ts` | `packages/` 层 |
+| `ShortcutManager` | `dock-editor/runtime/shortcut-manager.ts` | `packages/` 层 |
+
+**解法**：
+- 基础设施类抽到 packages 层，dock-editor 从 packages 导入
+- 快捷键注册改为 Runtime 内置逻辑（`builtin-shortcuts.ts` 在 Runtime.start() 中直接调用，不走 ServicePlugin）
+
 ---
 
 ## 完成标准
@@ -141,3 +165,6 @@ new DockEditor({
 - [x] App.tsx 仅负责配置 + 文档传入 + 渲染
 - [x] shortcuts-plugin 迁入 dock-editor 内置
 - [x] WidgetRegistry 创建下沉到 dock-editor，App 只传 widget 定义列表
+- [ ] 依赖方向修复：EditorStateStore 归还 domains 层
+- [ ] 快捷键改为 Runtime 内置逻辑，移除 ServicePlugin 包装
+- [ ] EventBus / HookSystem / ShortcutManager 抽到 packages 层
