@@ -1,8 +1,7 @@
+import type { InspectorGroup, UpdateField } from '@canvix-react/editor-types';
 import { FieldGroup } from '@canvix-react/ui-inspector';
-import type { PropertyGroup } from '@canvix-react/widget-registry';
 
 import { rendererMap } from './renderer-map.js';
-import type { UpdateField } from './types.js';
 
 const spanClass: Record<number, string> = {
   1: 'min-w-0 basis-[calc(25%-6px)]',
@@ -12,7 +11,7 @@ const spanClass: Record<number, string> = {
 };
 
 interface PropertyRendererProps {
-  groups: PropertyGroup[];
+  groups: InspectorGroup[];
   widgetData: Record<string, unknown>;
   updateField: UpdateField;
 }

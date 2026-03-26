@@ -1,14 +1,8 @@
+import type { EditorStateSnapshot } from '@canvix-react/editor-types';
 import { useSelectiveStore } from '@canvix-react/toolkit-shared';
 import { useCallback, useMemo } from 'react';
 
-import type {
-  EditorStateSnapshot,
-  ToolType,
-} from '../store/editor-state-store.js';
-
 import { useEditorRef } from './editor-ref.js';
-
-export type { ToolType };
 
 export type EditorLiveContextValue = EditorStateSnapshot;
 

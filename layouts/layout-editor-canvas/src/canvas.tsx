@@ -1,4 +1,10 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
+/*
+ * Description: Canvas — main editing viewport with zoom, pan, and page rendering.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
+
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import {
   useChronicleSelective,
@@ -6,25 +12,17 @@ import {
   useEditorRef,
 } from '@canvix-react/toolkit-editor';
 import { PageLiveProvider } from '@canvix-react/toolkit-shared';
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  type PointerEvent,
-} from 'react';
+import { useCallback, useMemo, useRef, type PointerEvent } from 'react';
 
 import { computeStripeBackground } from './color-contrast.js';
+import { FlowDragOverlay } from './flow-drag-overlay.js';
 import { useCanvasPointer } from './interactions/use-canvas-pointer.js';
 import { useZoomPan } from './interactions/use-zoom-pan.js';
 import { PageEditor } from './page-editor.js';
 import { SelectionOverlay } from './selection-overlay.js';
+import { useViewportCentering } from './use-viewport-centering.js';
 
-interface CanvasProps {
-  ctx: LayoutPluginContext;
-}
-
-export function Canvas({ ctx }: CanvasProps) {
+export function Canvas() {
   const ref = useEditorRef();
   const {
     activePageId,
@@ -46,6 +44,8 @@ export function Canvas({ ctx }: CanvasProps) {
   const pageContainerRef = useRef<HTMLDivElement>(null);
   const spaceHeldRef = useRef(false);
 
+  // ── Data ──
+
   const shouldUpdate = useCallback(
     (model: OperationModel) => {
       if (model.target === 'document') return true;
@@ -58,6 +58,8 @@ export function Canvas({ ctx }: CanvasProps) {
   const doc = useChronicleSelective(shouldUpdate);
   const page = doc.pages.find(p => p.id === activePageId);
 
+  // ── Viewport ──
+
   const { startPan } = useZoomPan({
     ref,
     canvasRef,
@@ -67,43 +69,16 @@ export function Canvas({ ctx }: CanvasProps) {
       : [0, 0],
   });
 
-  // Center page in viewport when canvas gets valid size or page switches
-  const viewportReadyRef = useRef(false);
-  const centeredPageIdRef = useRef<string | null>(null);
+  const { viewportReadyRef } = useViewportCentering({
+    ref,
+    canvasRef,
+    pageContainerRef,
+    pageId: page?.id ?? null,
+  });
 
-  const pageId = page?.id ?? null;
-  if (pageId !== centeredPageIdRef.current) {
-    viewportReadyRef.current = false;
-  }
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !page) return;
-
-    const observer = new ResizeObserver(([entry]) => {
-      const { width: vw, height: vh } = entry.contentRect;
-      if (vw === 0 || vh === 0) return;
-      observer.disconnect();
-
-      const pageEl = pageContainerRef.current;
-      if (!pageEl) return;
-      const { zoom: currentZoom } = ref.getSnapshot();
-
-      viewportReadyRef.current = true;
-      centeredPageIdRef.current = page.id;
-      // Camera = world-space coord of viewport top-left
-      const pageW = pageEl.offsetWidth;
-      const pageH = pageEl.offsetHeight;
-      const cameraX = pageW / 2 - vw / (2 * currentZoom);
-      const cameraY = pageH / 2 - vh / (2 * currentZoom);
-      ref.setCamera(cameraX, cameraY);
-    });
-    observer.observe(canvas);
-    return () => observer.disconnect();
-  }, [pageId, ref]);
+  // ── Interactions ──
 
   const { onPointerDown } = useCanvasPointer({
-    ctx,
     ref,
     pageId: page?.id ?? '',
     spaceHeldRef,
@@ -112,9 +87,11 @@ export function Canvas({ ctx }: CanvasProps) {
 
   if (!page) return <div style={{ padding: 16, color: '#999' }}>No pages</div>;
 
+  // ── Subscriptions ──
+
   const subscribePage = useCallback(
     (cb: () => void) =>
-      ctx.chronicle.onUpdate((model: OperationModel) => {
+      ref.chronicle.onUpdate((model: OperationModel) => {
         if (model.target === 'page' && model.id === page.id) {
           cb();
           return;
@@ -126,8 +103,10 @@ export function Canvas({ ctx }: CanvasProps) {
           if (touchesPages) cb();
         }
       }),
-    [ctx.chronicle, page.id],
+    [ref.chronicle, page.id],
   );
+
+  // ── Hover detection ──
 
   const onPointerMove = useCallback(
     (e: PointerEvent<HTMLDivElement>) => {
@@ -150,15 +129,17 @@ export function Canvas({ ctx }: CanvasProps) {
     ref.setHoveredWidget(null);
   }, [ref]);
 
+  // ── Derived state ──
+
   const isPanning = activeTool === 'hand' || spaceHeldRef.current;
-  const cursor = isPanning ? 'grab' : 'default';
   const isFlowDragging = flowDragWidgetId !== null;
 
-  const pageFg = page.foreground || '#fff';
   const stripeBackground = useMemo(
-    () => computeStripeBackground(pageFg),
-    [pageFg],
+    () => computeStripeBackground(page.foreground || '#fff'),
+    [page.foreground],
   );
+
+  // ── Render ──
 
   return (
     <div
@@ -170,7 +151,7 @@ export function Canvas({ ctx }: CanvasProps) {
         overflow: 'hidden',
         position: 'relative',
         background: page.background,
-        cursor,
+        cursor: isPanning ? 'grab' : 'default',
       }}
       onPointerDown={onPointerDown}
     >
@@ -219,21 +200,12 @@ export function Canvas({ ctx }: CanvasProps) {
           pageId={page.id}
           subscribe={subscribePage}
         >
-          <PageEditor ctx={ctx} registry={ctx.registry} />
+          <PageEditor />
         </PageLiveProvider>
         <SelectionOverlay pageContainerRef={pageContainerRef} />
-        {/* Flow drag dimming overlay with diagonal stripes */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: stripeBackground,
-            backgroundRepeat: 'repeat',
-            pointerEvents: 'none',
-            zIndex: 0,
-            opacity: isFlowDragging ? 1 : 0,
-            transition: 'opacity 200ms ease',
-          }}
+        <FlowDragOverlay
+          stripeBackground={stripeBackground}
+          visible={isFlowDragging}
         />
       </div>
     </div>

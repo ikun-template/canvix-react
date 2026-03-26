@@ -1,23 +1,20 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
-import type { OperationModel } from '@canvix-react/toolkit-editor';
-import { useEditorLive } from '@canvix-react/toolkit-editor';
-import {
-  WidgetLiveProvider,
-  usePageLive,
-  useWidgetLive,
-  useDocumentRef,
-} from '@canvix-react/toolkit-shared';
-import type { WidgetRegistry } from '@canvix-react/widget-registry';
-import { memo, useCallback, useMemo } from 'react';
+/*
+ * Description: Page editor — renders root widgets with flow drag placeholders.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
+
+import { useEditorLive, useEditorRef } from '@canvix-react/toolkit-editor';
+import { usePageLive, useDocumentRef } from '@canvix-react/toolkit-shared';
+import { useMemo } from 'react';
 
 import { computePlaceholderColor } from './color-contrast.js';
+import { FlowDropPlaceholder } from './flow-drop-placeholder.js';
+import { WidgetEditorWrapper } from './widget-editor-wrapper.js';
 
-interface PageEditorProps {
-  ctx: LayoutPluginContext;
-  registry: WidgetRegistry;
-}
-
-export function PageEditor({ ctx, registry }: PageEditorProps) {
+export function PageEditor() {
+  const ref = useEditorRef();
   const { pageId, widgetIds } = usePageLive();
   const { getDocument } = useDocumentRef();
   const { flowDragWidgetId, flowDropIndex, flowDragWidgetSize } = useEditorLive(
@@ -37,6 +34,8 @@ export function PageEditor({ ctx, registry }: PageEditorProps) {
 
   if (!page) return null;
 
+  // ── Collect slot children to find root widgets ──
+
   const slotChildIds = new Set<string>();
   for (const w of page.widgets) {
     if (w.slots) {
@@ -48,10 +47,8 @@ export function PageEditor({ ctx, registry }: PageEditorProps) {
 
   const rootWidgetIds = widgetIds.filter(id => !slotChildIds.has(id));
 
-  // During flow drag, the dragged widget is kept in the render tree
-  // (so its React component stays mounted and visible on the ghost).
-  // use-flow-drag.ts sets it to position:absolute via DOM, so it won't
-  // occupy flow space. We insert a placeholder at the drop position.
+  // ── Flow drag state ──
+
   const isFlowDragging = flowDragWidgetId !== null;
 
   // Compute visual drop index among root widgets (excluding dragged one)
@@ -67,17 +64,17 @@ export function PageEditor({ ctx, registry }: PageEditorProps) {
     visualDropIndex = count;
   }
 
-  // Count non-dragged root widgets for "placeholder at end" check
   const nonDragRootCount = isFlowDragging
     ? rootWidgetIds.filter(id => id !== flowDragWidgetId).length
     : rootWidgetIds.length;
+
+  // ── Build render elements ──
 
   const elements: React.ReactNode[] = [];
   let visualIdx = 0;
   for (const wId of rootWidgetIds) {
     const isDragTarget = wId === flowDragWidgetId;
 
-    // Insert placeholder before this visual position (skip dragged widget in counting)
     if (!isDragTarget && visualDropIndex === visualIdx) {
       elements.push(
         <FlowDropPlaceholder
@@ -93,14 +90,13 @@ export function PageEditor({ ctx, registry }: PageEditorProps) {
         key={wId}
         widgetId={wId}
         pageId={pageId}
-        ctx={ctx}
-        registry={registry}
+        chronicle={ref.chronicle}
       />,
     );
 
     if (!isDragTarget) visualIdx++;
   }
-  // Placeholder at the end
+
   if (visualDropIndex !== null && visualDropIndex >= nonDragRootCount) {
     elements.push(
       <FlowDropPlaceholder
@@ -112,101 +108,4 @@ export function PageEditor({ ctx, registry }: PageEditorProps) {
   }
 
   return <>{elements}</>;
-}
-
-function FlowDropPlaceholder({
-  size,
-  color,
-}: {
-  size: [number, number] | null;
-  color: string;
-}) {
-  return (
-    <div
-      data-flow-placeholder=""
-      style={{
-        width: size?.[0] ?? 100,
-        height: size?.[1] ?? 40,
-        background: color,
-        borderRadius: 8,
-        transition: 'all 200ms ease',
-      }}
-    />
-  );
-}
-
-const WidgetEditorWrapper = memo(function WidgetEditorWrapper({
-  widgetId,
-  pageId,
-  ctx,
-  registry,
-}: {
-  widgetId: string;
-  pageId: string;
-  ctx: LayoutPluginContext;
-  registry: WidgetRegistry;
-}) {
-  const subscribeWidget = useCallback(
-    (cb: () => void) =>
-      ctx.chronicle.onUpdate((model: OperationModel) => {
-        if (model.target === 'widget' && model.id === widgetId) cb();
-      }),
-    [ctx.chronicle, widgetId],
-  );
-
-  return (
-    <WidgetLiveProvider
-      widgetId={widgetId}
-      pageId={pageId}
-      parentId={null}
-      slotName={null}
-      subscribe={subscribeWidget}
-    >
-      <WidgetEditor widgetId={widgetId} registry={registry} />
-    </WidgetLiveProvider>
-  );
-});
-
-function WidgetEditor({
-  widgetId,
-  registry,
-}: {
-  widgetId: string;
-  registry: WidgetRegistry;
-}) {
-  const { pageId } = useWidgetLive();
-
-  const { getDocument } = useDocumentRef();
-
-  const doc = getDocument();
-  const page = doc.pages.find(p => p.id === pageId);
-  const widget = page?.widgets.find(w => w.id === widgetId);
-
-  if (!widget) return null;
-
-  const definition = registry.get(widget.type);
-  const Component = definition?.render.editor;
-
-  console.debug('[mine] widget render effect', String(widgetId));
-
-  return (
-    <div
-      data-widget-id={widget.id}
-      style={{
-        position: widget.mode === 'absolute' ? 'absolute' : 'relative',
-        left: widget.mode === 'absolute' ? widget.position.axis[0] : undefined,
-        top: widget.mode === 'absolute' ? widget.position.axis[1] : undefined,
-        width: widget.layout.size[0],
-        height: widget.layout.size[1],
-        transform: widget.rotation
-          ? `rotate(${widget.rotation}deg)`
-          : undefined,
-        opacity: widget.opacity,
-        display: widget.hide ? 'none' : undefined,
-        padding: widget.layout.padding.map(v => `${v}px`).join(' '),
-      }}
-    >
-      {Component && <Component data={widget.custom_data} />}
-    </div>
-  );
 }

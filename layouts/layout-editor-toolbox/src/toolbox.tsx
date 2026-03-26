@@ -1,11 +1,13 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
+import type {
+  EditorToolType,
+  WidgetPluginDefinition,
+} from '@canvix-react/editor-types';
 import { Hand, MousePointer2, Plus } from '@canvix-react/icon';
 import { widgetDefaults } from '@canvix-react/schema-widget';
 import {
   useEditorLive,
   useEditorRef,
   useI18n,
-  type ToolType,
 } from '@canvix-react/toolkit-editor';
 import {
   Button,
@@ -14,26 +16,21 @@ import {
   PopoverTrigger,
   Separator,
 } from '@canvix-react/ui';
-import type { WidgetDefinition } from '@canvix-react/widget-registry';
 import { useState } from 'react';
-
-interface ToolboxProps {
-  ctx: LayoutPluginContext;
-}
 
 const TOOLBAR_TOOLS = [
   {
-    id: 'select' as ToolType,
+    id: 'select' as EditorToolType,
     labelKey: 'toolbox.tool.select',
     Icon: MousePointer2,
   },
-  { id: 'hand' as ToolType, labelKey: 'toolbox.tool.hand', Icon: Hand },
+  { id: 'hand' as EditorToolType, labelKey: 'toolbox.tool.hand', Icon: Hand },
 ] as const;
 
-export function Toolbox({ ctx }: ToolboxProps) {
+export function Toolbox() {
   const { t } = useI18n();
   const ref = useEditorRef();
-  const definitions = ctx.registry.getAll();
+  const definitions = ref.registry.getAll();
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   const { activeTool, activePageId } = useEditorLive(
@@ -41,11 +38,11 @@ export function Toolbox({ ctx }: ToolboxProps) {
     'activePageId',
   );
 
-  function addWidget(def: WidgetDefinition) {
+  function addWidget(def: WidgetPluginDefinition) {
     const pageId = activePageId;
     if (!pageId) return;
 
-    const page = ctx.chronicle.getDocument().pages.find(p => p.id === pageId);
+    const page = ref.chronicle.getDocument().pages.find(p => p.id === pageId);
     if (!page) return;
 
     const widget = widgetDefaults({
@@ -56,7 +53,7 @@ export function Toolbox({ ctx }: ToolboxProps) {
       ...def.defaultSchema,
     });
 
-    ctx.update({
+    ref.update({
       target: 'page',
       id: pageId,
       operations: [

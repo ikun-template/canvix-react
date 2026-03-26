@@ -6,7 +6,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@canvix-react/dock-editor": "workspace:*",
+    "@canvix-react/editor-types": "workspace:*",
     "@canvix-react/inspector-controls": "workspace:*",
     "@canvix-react/toolkit-editor": "workspace:*",
     "@canvix-react/toolkit-shared": "workspace:*",

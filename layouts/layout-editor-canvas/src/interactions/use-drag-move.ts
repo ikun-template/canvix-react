@@ -1,7 +1,4 @@
-import type {
-  LayoutPluginContext,
-  TempSession,
-} from '@canvix-react/dock-editor';
+import type { DraftSession } from '@canvix-react/editor-types';
 import type { EditorRefContextValue } from '@canvix-react/toolkit-editor';
 
 import type { Point } from './types.js';
@@ -16,15 +13,12 @@ interface DragMovePending {
 interface DragMoveActive {
   origin: Point;
   initialPositions: Map<string, [number, number]>;
-  session: TempSession;
+  session: DraftSession;
   pageId: string;
   widgetIds: string[];
 }
 
-export function createDragMove(
-  ctx: LayoutPluginContext,
-  ref: EditorRefContextValue,
-) {
+export function createDragMove(ref: EditorRefContextValue) {
   let pending: DragMovePending | null = null;
   let active: DragMoveActive | null = null;
 
@@ -45,7 +39,7 @@ export function createDragMove(
   function activate() {
     if (!pending) return;
 
-    const doc = ctx.chronicle.getDocument();
+    const doc = ref.chronicle.getDocument();
     const page = doc.pages.find(
       (p: { id: string }) => p.id === pending!.pageId,
     );
@@ -58,7 +52,7 @@ export function createDragMove(
     for (const id of pending.widgetIds) {
       const widget = page.widgets.find((w: { id: string }) => w.id === id);
       if (widget && widget.mode === 'absolute') {
-        initialPositions.set(id, [...widget.position.axis]);
+        initialPositions.set(id, [...widget.position.axis] as [number, number]);
       }
     }
 
@@ -67,7 +61,7 @@ export function createDragMove(
       return;
     }
 
-    const session = ctx.beginTemp();
+    const session = ref.beginDraft();
     ref.setInteracting(true);
 
     active = {

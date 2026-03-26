@@ -8,13 +8,13 @@
   "dependencies": {
     "@canvix-react/chronicle": "workspace:*",
     "@canvix-react/dock-editor": "workspace:*",
+    "@canvix-react/editor-types": "workspace:*",
     "@canvix-react/i18n": "workspace:*",
     "@canvix-react/schema-document": "workspace:*",
     "@canvix-react/schema-page": "workspace:*",
     "@canvix-react/schema-widget": "workspace:*",
     "@canvix-react/theme": "workspace:*",
-    "@canvix-react/toolkit-shared": "workspace:*",
-    "@canvix-react/widget-registry": "workspace:*"
+    "@canvix-react/toolkit-shared": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.5"

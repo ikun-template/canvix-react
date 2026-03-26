@@ -1,6 +1,6 @@
+import type { WidgetPluginDefinition } from '@canvix-react/editor-types';
 import { ImageIcon } from '@canvix-react/icon';
 import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
-import type { WidgetDefinition } from '@canvix-react/widget-registry';
 
 import { ImageEditor } from './editor.js';
 import type { ImageData } from './types.js';
@@ -8,7 +8,7 @@ import { ImageViewer } from './viewer.js';
 
 export type { ImageData } from './types.js';
 
-export const imageDefinition: WidgetDefinition<ImageData> = {
+export const imageDefinition: WidgetPluginDefinition<ImageData> = {
   type: 'image',
   meta: {
     name: 'widgets.image',

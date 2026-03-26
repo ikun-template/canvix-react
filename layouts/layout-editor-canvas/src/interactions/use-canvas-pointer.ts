@@ -1,4 +1,3 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { EditorRefContextValue } from '@canvix-react/toolkit-editor';
 import { useCallback, useRef } from 'react';
 
@@ -8,7 +7,6 @@ import { createDragResize } from './use-drag-resize.js';
 import { createFlowDragMove } from './use-flow-drag.js';
 
 interface UseCanvasPointerOptions {
-  ctx: LayoutPluginContext;
   ref: EditorRefContextValue;
   pageId: string;
   spaceHeldRef: React.RefObject<boolean>;
@@ -16,7 +14,6 @@ interface UseCanvasPointerOptions {
 }
 
 export function useCanvasPointer({
-  ctx,
   ref,
   pageId,
   spaceHeldRef,
@@ -31,10 +28,9 @@ export function useCanvasPointer({
   );
 
   // Lazily create factories
-  if (!dragMoveRef.current) dragMoveRef.current = createDragMove(ctx, ref);
-  if (!dragResizeRef.current)
-    dragResizeRef.current = createDragResize(ctx, ref);
-  if (!flowDragRef.current) flowDragRef.current = createFlowDragMove(ctx, ref);
+  if (!dragMoveRef.current) dragMoveRef.current = createDragMove(ref);
+  if (!dragResizeRef.current) dragResizeRef.current = createDragResize(ref);
+  if (!flowDragRef.current) flowDragRef.current = createFlowDragMove(ref);
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -91,7 +87,7 @@ export function useCanvasPointer({
           }
 
           // Check widget mode to dispatch drag type
-          const doc = ctx.chronicle.getDocument();
+          const doc = ref.chronicle.getDocument();
           const currentPage = doc.pages.find(
             (p: { id: string }) => p.id === pageId,
           );
@@ -115,7 +111,7 @@ export function useCanvasPointer({
       // 4. Hit empty space → clear selection
       ref.setSelection([]);
     },
-    [ctx, ref, pageId, spaceHeldRef, startPan],
+    [ref, pageId, spaceHeldRef, startPan],
   );
 
   return { onPointerDown };

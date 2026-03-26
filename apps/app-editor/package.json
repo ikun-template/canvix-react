@@ -12,6 +12,7 @@
   "dependencies": {
     "@canvix-react/chronicle": "workspace:*",
     "@canvix-react/dock-editor": "workspace:*",
+    "@canvix-react/editor-types": "workspace:*",
     "@canvix-react/i18n": "workspace:*",
     "@canvix-react/icon": "workspace:*",
     "@canvix-react/layout-editor-canvas": "workspace:*",
@@ -23,6 +24,8 @@
     "@canvix-react/schema-document": "workspace:*",
     "@canvix-react/schema-page": "workspace:*",
     "@canvix-react/schema-widget": "workspace:*",
+    "@canvix-react/serializer": "workspace:*",
+    "@canvix-react/services": "workspace:*",
     "@canvix-react/theme": "workspace:*",
     "@canvix-react/toolkit-editor": "workspace:*",
     "@canvix-react/toolkit-shared": "workspace:*",

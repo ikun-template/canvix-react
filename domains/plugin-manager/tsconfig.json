@@ -1,0 +1,7 @@
+{
+  "extends": "../../.config/typescript/tsconfig.pkg.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src"]
+}

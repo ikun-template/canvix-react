@@ -1,27 +1,24 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
+import { useEditorRef } from '@canvix-react/toolkit-editor';
 import { WidgetLiveProvider } from '@canvix-react/toolkit-shared';
 import { useCallback } from 'react';
 
 import { InspectorWidgetContent } from './inspector-widget-content.js';
 
 interface InspectorWidgetProps {
-  ctx: LayoutPluginContext;
   widgetId: string;
   pageId: string;
 }
 
-export function InspectorWidget({
-  ctx,
-  widgetId,
-  pageId,
-}: InspectorWidgetProps) {
+export function InspectorWidget({ widgetId, pageId }: InspectorWidgetProps) {
+  const ref = useEditorRef();
+
   const subscribeWidget = useCallback(
     (cb: () => void) =>
-      ctx.chronicle.onUpdate((model: OperationModel) => {
+      ref.chronicle.onUpdate((model: OperationModel) => {
         if (model.target === 'widget' && model.id === widgetId) cb();
       }),
-    [ctx.chronicle, widgetId],
+    [ref.chronicle, widgetId],
   );
 
   return (
@@ -32,7 +29,7 @@ export function InspectorWidget({
       slotName={null}
       subscribe={subscribeWidget}
     >
-      <InspectorWidgetContent ctx={ctx} widgetId={widgetId} pageId={pageId} />
+      <InspectorWidgetContent widgetId={widgetId} pageId={pageId} />
     </WidgetLiveProvider>
   );
 }

@@ -1,27 +1,24 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import { Plus } from '@canvix-react/icon';
 import { pageDefaults } from '@canvix-react/schema-page';
 import { useEditorRef, useI18n } from '@canvix-react/toolkit-editor';
 import { useCallback, useRef } from 'react';
 
 import { PageExplorer } from './page-explorer.js';
+import { SaveButton } from './save-button.js';
+import { SettingsButton } from './settings-button.js';
 import { useResizeHandle } from './use-resize-handle.js';
 import { WidgetExplorer } from './widget-explorer.js';
 
-interface SidebarProps {
-  ctx: LayoutPluginContext;
-}
-
-export function Sidebar({ ctx }: SidebarProps) {
+export function Sidebar() {
   const { t } = useI18n();
   const ref = useEditorRef();
   const containerRef = useRef<HTMLDivElement>(null);
   const { topHeight, handleProps } = useResizeHandle({ containerRef });
 
   const addPage = useCallback(() => {
-    const doc = ctx.chronicle.getDocument();
+    const doc = ref.chronicle.getDocument();
     const page = pageDefaults({ name: `Page ${doc.pages.length + 1}` });
-    ctx.update({
+    ref.update({
       target: 'document',
       operations: [
         {
@@ -33,7 +30,7 @@ export function Sidebar({ ctx }: SidebarProps) {
       ],
     });
     ref.setActivePage(page.id);
-  }, [ctx, ref]);
+  }, [ref]);
 
   return (
     <div ref={containerRef} className="flex h-full flex-col overflow-hidden">
@@ -52,7 +49,7 @@ export function Sidebar({ ctx }: SidebarProps) {
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-2">
-          <PageExplorer ctx={ctx} />
+          <PageExplorer />
         </div>
       </div>
 
@@ -67,8 +64,12 @@ export function Sidebar({ ctx }: SidebarProps) {
           </h4>
         </div>
         <div className="flex-1 overflow-y-auto px-2">
-          <WidgetExplorer ctx={ctx} />
+          <WidgetExplorer />
         </div>
+      </div>
+      <div className="absolute bottom-2 left-2 z-10 flex items-center gap-1">
+        <SaveButton />
+        <SettingsButton />
       </div>
     </div>
   );

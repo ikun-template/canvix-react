@@ -8,4 +8,6 @@ export default {
   'common.undo': 'Undo',
   'common.redo': 'Redo',
   'common.apply': 'Apply',
+  'save.success': 'Saved successfully',
+  'save.error': 'Failed to save',
 } as const;

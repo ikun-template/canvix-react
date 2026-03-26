@@ -1,7 +1,4 @@
-import type {
-  LayoutPluginContext,
-  TempSession,
-} from '@canvix-react/dock-editor';
+import type { DraftSession } from '@canvix-react/editor-types';
 import type { EditorRefContextValue } from '@canvix-react/toolkit-editor';
 
 import type { HandleDirection } from './types.js';
@@ -51,16 +48,13 @@ interface DragResizeActive {
   initialW: number;
   initialH: number;
   factors: [number, number, number, number];
-  session: TempSession;
+  session: DraftSession;
   pageId: string;
   widgetId: string;
   isAbsolute: boolean;
 }
 
-export function createDragResize(
-  ctx: LayoutPluginContext,
-  ref: EditorRefContextValue,
-) {
+export function createDragResize(ref: EditorRefContextValue) {
   let pending: DragResizePending | null = null;
   let active: DragResizeActive | null = null;
 
@@ -88,7 +82,7 @@ export function createDragResize(
   function activate() {
     if (!pending) return;
 
-    const doc = ctx.chronicle.getDocument();
+    const doc = ref.chronicle.getDocument();
     const page = doc.pages.find(
       (p: { id: string }) => p.id === pending!.pageId,
     );
@@ -106,7 +100,7 @@ export function createDragResize(
     }
 
     const isAbsolute = widget.mode === 'absolute';
-    const session = ctx.beginTemp();
+    const session = ref.beginDraft();
     ref.setInteracting(true);
 
     active = {

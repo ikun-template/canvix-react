@@ -1,12 +1,23 @@
+/*
+ * Description: Editor bootstrap hook — creates and manages the Runtime lifecycle.
+ *              Loads document from IndexedDB or creates a default one.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
+
+import { DockEditor, type SaveAdapter } from '@canvix-react/dock-editor';
 import type {
-  LayoutPluginContext,
+  EditorConfig,
   LayoutPluginDefinition,
-} from '@canvix-react/dock-editor';
-import { DockEditor } from '@canvix-react/dock-editor';
+  ServicePluginDefinition,
+  WidgetPluginDefinition,
+} from '@canvix-react/editor-types';
+import { serialize, deserialize } from '@canvix-react/serializer';
+import { documentService } from '@canvix-react/services';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { createDefaultDocument } from './create-document.js';
-import { createRegistry } from './create-registry.js';
 
 export interface BootstrapState {
   phase: 'loading' | 'ready';
@@ -14,33 +25,40 @@ export interface BootstrapState {
   messageKey: string;
 }
 
+interface BootstrapOptions {
+  plugins: LayoutPluginDefinition[];
+  widgets: WidgetPluginDefinition[];
+  servicePlugins?: ServicePluginDefinition[];
+  config: EditorConfig;
+  saveAdapter?: SaveAdapter;
+}
+
 interface BootstrapResult {
   state: BootstrapState;
   shellRef: (el: HTMLDivElement | null) => void;
-  ctx: LayoutPluginContext | null;
-  container: HTMLDivElement | null;
+  runtime: DockEditor | null;
 }
 
 const PHASE_INTERVAL = 200;
 
-export function useEditorBootstrap(
-  plugins: LayoutPluginDefinition[],
-): BootstrapResult {
+export function useEditorBootstrap(options: BootstrapOptions): BootstrapResult {
+  const { plugins, widgets, servicePlugins, config, saveAdapter } = options;
+
   const [state, setState] = useState<BootstrapState>({
     phase: 'loading',
     progress: 20,
     messageKey: 'loading.document',
   });
-  const [container, setContainer] = useState<HTMLDivElement | null>(null);
-  const [ctx, setCtx] = useState<LayoutPluginContext | null>(null);
-  const editorRef = useRef<DockEditor | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [runtime, setRuntime] = useState<DockEditor | null>(null);
+  const editorInstance = useRef<DockEditor | null>(null);
 
   const shellRef = useCallback((el: HTMLDivElement | null) => {
-    setContainer(el);
+    setMounted(el !== null);
   }, []);
 
   useEffect(() => {
-    if (!container) return;
+    if (!mounted) return;
 
     let cancelled = false;
 
@@ -53,48 +71,61 @@ export function useEditorBootstrap(
     };
 
     const run = async () => {
-      // Phase 2: Load document
+      // Phase 1: Load or create document
       await setPhase(20, 'loading.document');
       if (cancelled) return;
-      const doc = createDefaultDocument();
 
-      // Phase 3: Register widgets
-      await setPhase(40, 'loading.registry');
+      let doc;
+      let docId: string;
+
+      const existing = await documentService.list();
+      if (existing.length > 0) {
+        const record = await documentService.get(existing[0].id);
+        doc = record.data ? deserialize(record.data) : createDefaultDocument();
+        docId = record.id;
+      } else {
+        doc = createDefaultDocument();
+        const record = await documentService.create(doc.title || 'Untitled');
+        await documentService.update(record.id, { data: serialize(doc) });
+        docId = record.id;
+      }
       if (cancelled) return;
-      const registry = createRegistry();
 
-      // Phase 4: Start editor
+      // Phase 2: Initialize editor
       await setPhase(60, 'loading.editor');
       if (cancelled) return;
       const editor = new DockEditor({
         document: doc,
-        registry,
+        widgets,
+        config,
         plugins,
-        container,
+        servicePlugins,
+        documentId: docId,
+        saveAdapter,
       });
-      editorRef.current = editor;
+      editorInstance.current = editor;
 
       await editor.start();
 
-      // Phase 5: Ready
+      // Phase 3: Finalize
       await setPhase(90, 'loading.ready');
       if (cancelled) return;
 
       setState({ phase: 'ready', progress: 100, messageKey: 'loading.ready' });
-      setCtx(editor.getPluginContext());
+      setRuntime(editor);
     };
 
     run();
 
     return () => {
       cancelled = true;
-      setCtx(null);
-      if (editorRef.current) {
-        editorRef.current.destroy();
-        editorRef.current = null;
+      setRuntime(null);
+      if (editorInstance.current) {
+        editorInstance.current.destroy();
+        editorInstance.current = null;
       }
     };
-  }, [container, plugins]);
+  }, [mounted, plugins, widgets, servicePlugins, config, saveAdapter]);
 
-  return { state, shellRef, ctx, container };
+  return { state, shellRef, runtime };
 }

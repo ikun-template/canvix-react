@@ -1,6 +1,6 @@
+import type { WidgetPluginDefinition } from '@canvix-react/editor-types';
 import { Type } from '@canvix-react/icon';
 import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
-import type { WidgetDefinition } from '@canvix-react/widget-registry';
 
 import { TextEditor } from './editor.js';
 import type { TextData } from './types.js';
@@ -8,7 +8,7 @@ import { TextViewer } from './viewer.js';
 
 export type { TextData } from './types.js';
 
-export const textDefinition: WidgetDefinition<TextData> = {
+export const textDefinition: WidgetPluginDefinition<TextData> = {
   type: 'text',
   meta: {
     name: 'widgets.text',

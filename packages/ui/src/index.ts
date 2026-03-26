@@ -38,6 +38,16 @@ export {
 export { Separator } from './components/separator.js';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/tabs.js';
 export {
+  toast,
+  Toaster,
+  ToastProvider,
+  ToastViewport,
+  ToastRoot,
+  ToastClose,
+  ToastTitle,
+  ToastDescription,
+} from './components/toast.js';
+export {
   ContextMenu,
   ContextMenuCheckboxItem,
   ContextMenuContent,

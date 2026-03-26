@@ -1,4 +1,3 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import {
   useChronicleSelective,
@@ -6,10 +5,6 @@ import {
   useEditorRef,
   useI18n,
 } from '@canvix-react/toolkit-editor';
-
-interface WidgetExplorerProps {
-  ctx: LayoutPluginContext;
-}
 
 const shouldUpdate = (model: OperationModel) => {
   if (model.target === 'document') return true;
@@ -22,7 +17,7 @@ const shouldUpdate = (model: OperationModel) => {
   return false;
 };
 
-export function WidgetExplorer({ ctx }: WidgetExplorerProps) {
+export function WidgetExplorer() {
   const { t } = useI18n();
   const ref = useEditorRef();
   const snapshot = useEditorLive(
@@ -46,7 +41,7 @@ export function WidgetExplorer({ ctx }: WidgetExplorerProps) {
   return (
     <ul className="flex list-none flex-col gap-1 p-0">
       {widgets.map(widget => {
-        const def = ctx.registry.get(widget.type);
+        const def = ref.registry.get(widget.type);
         const Icon = def?.meta.icon;
         const isSelected = snapshot.selectedWidgetIds.includes(widget.id);
         const isHovered = !isSelected && snapshot.hoveredWidgetId === widget.id;

@@ -6,6 +6,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@canvix-react/editor-types": "workspace:*",
     "@canvix-react/schema-widget": "workspace:*"
   },
   "devDependencies": {

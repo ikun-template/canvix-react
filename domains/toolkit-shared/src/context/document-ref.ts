@@ -2,7 +2,6 @@ import type { DocumentRuntime } from '@canvix-react/schema-document';
 import { createContext, useContext } from 'react';
 
 export interface DocumentRefContextValue {
-  document: Readonly<DocumentRuntime>;
   getDocument: () => Readonly<DocumentRuntime>;
 }
 

@@ -29,6 +29,9 @@ importers:
       '@canvix-react/dock-editor':
         specifier: workspace:*
         version: link:../../docks/dock-editor
+      '@canvix-react/editor-types':
+        specifier: workspace:*
+        version: link:../../domains/types
       '@canvix-react/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
@@ -62,6 +65,12 @@ importers:
       '@canvix-react/schema-widget':
         specifier: workspace:*
         version: link:../../schemas/widget
+      '@canvix-react/serializer':
+        specifier: workspace:*
+        version: link:../../domains/serializer
+      '@canvix-react/services':
+        specifier: workspace:*
+        version: link:../../domains/services
       '@canvix-react/theme':
         specifier: workspace:*
         version: link:../../domains/theme
@@ -144,6 +153,12 @@ importers:
       '@canvix-react/chronicle':
         specifier: workspace:*
         version: link:../../domains/chronicle
+      '@canvix-react/editor-types':
+        specifier: workspace:*
+        version: link:../../domains/types
+      '@canvix-react/plugin-manager':
+        specifier: workspace:*
+        version: link:../../domains/plugin-manager
       '@canvix-react/schema-document':
         specifier: workspace:*
         version: link:../../schemas/document
@@ -228,6 +243,9 @@ importers:
 
   domains/inspector-controls:
     dependencies:
+      '@canvix-react/editor-types':
+        specifier: workspace:*
+        version: link:../types
       '@canvix-react/icon':
         specifier: workspace:*
         version: link:../icon
@@ -237,9 +255,6 @@ importers:
       '@canvix-react/ui-inspector':
         specifier: workspace:*
         version: link:../ui-inspector
-      '@canvix-react/widget-registry':
-        specifier: workspace:*
-        version: link:../widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -282,6 +297,12 @@ importers:
         specifier: ^19.2.5
         version: 19.2.13
 
+  domains/plugin-manager:
+    dependencies:
+      '@canvix-react/editor-types':
+        specifier: workspace:*
+        version: link:../types
+
   domains/serializer:
     dependencies:
       '@canvix-react/schema-document':
@@ -316,6 +337,9 @@ importers:
       '@canvix-react/dock-editor':
         specifier: workspace:*
         version: link:../../docks/dock-editor
+      '@canvix-react/editor-types':
+        specifier: workspace:*
+        version: link:../types
       '@canvix-react/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n
@@ -334,9 +358,6 @@ importers:
       '@canvix-react/toolkit-shared':
         specifier: workspace:*
         version: link:../toolkit-shared
-      '@canvix-react/widget-registry':
-        specifier: workspace:*
-        version: link:../widget-registry
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -356,6 +377,28 @@ importers:
       '@canvix-react/schema-widget':
         specifier: workspace:*
         version: link:../../schemas/widget
+      react:
+        specifier: '>=19'
+        version: 19.2.4
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.5
+        version: 19.2.13
+
+  domains/types:
+    dependencies:
+      '@canvix-react/chronicle':
+        specifier: workspace:*
+        version: link:../chronicle
+      '@canvix-react/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      '@canvix-react/schema-widget':
+        specifier: workspace:*
+        version: link:../../schemas/widget
+      '@canvix-react/theme':
+        specifier: workspace:*
+        version: link:../theme
       react:
         specifier: '>=19'
         version: 19.2.4
@@ -385,6 +428,9 @@ importers:
 
   domains/widget-registry:
     dependencies:
+      '@canvix-react/editor-types':
+        specifier: workspace:*
+        version: link:../types
       '@canvix-react/schema-widget':
         specifier: workspace:*
         version: link:../../schemas/widget
@@ -398,9 +444,9 @@ importers:
 
   layouts/layout-editor-canvas:
     dependencies:
-      '@canvix-react/dock-editor':
+      '@canvix-react/editor-types':
         specifier: workspace:*
-        version: link:../../docks/dock-editor
+        version: link:../../domains/types
       '@canvix-react/toolkit-editor':
         specifier: workspace:*
         version: link:../../domains/toolkit-editor
@@ -426,9 +472,9 @@ importers:
 
   layouts/layout-editor-inspector:
     dependencies:
-      '@canvix-react/dock-editor':
+      '@canvix-react/editor-types':
         specifier: workspace:*
-        version: link:../../docks/dock-editor
+        version: link:../../domains/types
       '@canvix-react/inspector-controls':
         specifier: workspace:*
         version: link:../../domains/inspector-controls
@@ -482,18 +528,24 @@ importers:
 
   layouts/layout-editor-sidebar:
     dependencies:
-      '@canvix-react/dock-editor':
+      '@canvix-react/editor-types':
         specifier: workspace:*
-        version: link:../../docks/dock-editor
+        version: link:../../domains/types
       '@canvix-react/icon':
         specifier: workspace:*
         version: link:../../domains/icon
+      '@canvix-react/layout-editor-settings':
+        specifier: workspace:*
+        version: link:../layout-editor-settings
       '@canvix-react/schema-page':
         specifier: workspace:*
         version: link:../../schemas/page
       '@canvix-react/toolkit-editor':
         specifier: workspace:*
         version: link:../../domains/toolkit-editor
+      '@canvix-react/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@canvix-react/widget-registry':
         specifier: workspace:*
         version: link:../../domains/widget-registry
@@ -513,9 +565,9 @@ importers:
 
   layouts/layout-editor-toolbox:
     dependencies:
-      '@canvix-react/dock-editor':
+      '@canvix-react/editor-types':
         specifier: workspace:*
-        version: link:../../docks/dock-editor
+        version: link:../../domains/types
       '@canvix-react/icon':
         specifier: workspace:*
         version: link:../../domains/icon
@@ -641,6 +693,9 @@ importers:
 
   widgets/widget-image:
     dependencies:
+      '@canvix-react/editor-types':
+        specifier: workspace:*
+        version: link:../../domains/types
       '@canvix-react/icon':
         specifier: workspace:*
         version: link:../../domains/icon
@@ -660,6 +715,9 @@ importers:
 
   widgets/widget-shape:
     dependencies:
+      '@canvix-react/editor-types':
+        specifier: workspace:*
+        version: link:../../domains/types
       '@canvix-react/icon':
         specifier: workspace:*
         version: link:../../domains/icon
@@ -679,6 +737,9 @@ importers:
 
   widgets/widget-text:
     dependencies:
+      '@canvix-react/editor-types':
+        specifier: workspace:*
+        version: link:../../domains/types
       '@canvix-react/icon':
         specifier: workspace:*
         version: link:../../domains/icon

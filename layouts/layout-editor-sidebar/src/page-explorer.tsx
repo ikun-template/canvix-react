@@ -1,14 +1,9 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { OperationModel } from '@canvix-react/toolkit-editor';
 import {
   useChronicleSelective,
   useEditorLive,
   useEditorRef,
 } from '@canvix-react/toolkit-editor';
-
-interface PageExplorerProps {
-  ctx: LayoutPluginContext;
-}
 
 const shouldUpdate = (model: OperationModel) => {
   if (model.target === 'document') return true;
@@ -18,7 +13,7 @@ const shouldUpdate = (model: OperationModel) => {
   return false;
 };
 
-export function PageExplorer({ ctx }: PageExplorerProps) {
+export function PageExplorer() {
   const ref = useEditorRef();
   const activePageId = useEditorLive('activePageId');
 

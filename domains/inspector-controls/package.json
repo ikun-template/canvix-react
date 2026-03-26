@@ -6,10 +6,10 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@canvix-react/editor-types": "workspace:*",
     "@canvix-react/icon": "workspace:*",
     "@canvix-react/toolkit-editor": "workspace:*",
-    "@canvix-react/ui-inspector": "workspace:*",
-    "@canvix-react/widget-registry": "workspace:*"
+    "@canvix-react/ui-inspector": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.5",

@@ -1,44 +1,29 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
+/*
+ * Description: Inspector panel — shows page or widget properties based on selection.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
+
 import { useEditorLive, useI18n } from '@canvix-react/toolkit-editor';
 import { InspectorColorPickerProvider } from '@canvix-react/ui-inspector';
 
 import { InspectorPage } from './inspector-page.js';
 import { InspectorWidget } from './inspector-widget.js';
 
-interface InspectorProps {
-  ctx: LayoutPluginContext;
-}
-
-export function Inspector({ ctx }: InspectorProps) {
+export function Inspector() {
+  const { t } = useI18n();
   const { selectedWidgetIds: selected, activePageId: pageId } = useEditorLive(
     'selectedWidgetIds',
     'activePageId',
   );
 
-  return (
-    <InspectorColorPickerProvider>
-      <InspectorContent ctx={ctx} selected={selected} pageId={pageId} />
-    </InspectorColorPickerProvider>
-  );
-}
-
-function InspectorContent({
-  ctx,
-  selected,
-  pageId,
-}: {
-  ctx: LayoutPluginContext;
-  selected: string[];
-  pageId: string;
-}) {
-  const { t } = useI18n();
+  let content: React.ReactNode;
 
   if (selected.length === 0) {
-    return <InspectorPage ctx={ctx} pageId={pageId} />;
-  }
-
-  if (selected.length > 1) {
-    return (
+    content = <InspectorPage pageId={pageId} />;
+  } else if (selected.length > 1) {
+    content = (
       <div className="text-muted-foreground flex h-full flex-col items-center justify-center gap-1 text-sm">
         <span className="text-2xl">⬡</span>
         <span>
@@ -46,7 +31,9 @@ function InspectorContent({
         </span>
       </div>
     );
+  } else {
+    content = <InspectorWidget widgetId={selected[0]} pageId={pageId} />;
   }
 
-  return <InspectorWidget ctx={ctx} widgetId={selected[0]} pageId={pageId} />;
+  return <InspectorColorPickerProvider>{content}</InspectorColorPickerProvider>;
 }

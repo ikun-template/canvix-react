@@ -1,4 +1,3 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import type { EditorRefContextValue } from '@canvix-react/toolkit-editor';
 
 import type { Point } from './types.js';
@@ -32,10 +31,7 @@ interface FlowDragActive {
   };
 }
 
-export function createFlowDragMove(
-  ctx: LayoutPluginContext,
-  ref: EditorRefContextValue,
-) {
+export function createFlowDragMove(ref: EditorRefContextValue) {
   let pending: FlowDragPending | null = null;
   let active: FlowDragActive | null = null;
 
@@ -56,7 +52,7 @@ export function createFlowDragMove(
   function activate() {
     if (!pending) return;
 
-    const doc = ctx.chronicle.getDocument();
+    const doc = ref.chronicle.getDocument();
     const page = doc.pages.find(
       (p: { id: string }) => p.id === pending!.pageId,
     );
@@ -151,7 +147,7 @@ export function createFlowDragMove(
   }
 
   function computeDropIndex(e: PointerEvent, s: FlowDragActive): number {
-    const doc = ctx.chronicle.getDocument();
+    const doc = ref.chronicle.getDocument();
     const page = doc.pages.find((p: { id: string }) => p.id === s.pageId);
     if (!page) return s.originalIndex;
 
@@ -280,7 +276,7 @@ export function createFlowDragMove(
       const to = dropIndex > from ? dropIndex - 1 : dropIndex;
 
       if (from !== to) {
-        ctx.update({
+        ref.update({
           target: 'page',
           id: active.pageId,
           operations: [{ kind: 'move', chain: ['widgets'], from, to }],

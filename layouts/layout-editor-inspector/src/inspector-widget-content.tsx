@@ -1,19 +1,19 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import { PropertyRenderer } from '@canvix-react/inspector-controls';
+import { useEditorRef } from '@canvix-react/toolkit-editor';
 import { useDocumentRef, useWidgetLive } from '@canvix-react/toolkit-shared';
 import { useCallback, useMemo } from 'react';
 
 interface InspectorWidgetContentProps {
-  ctx: LayoutPluginContext;
   widgetId: string;
   pageId: string;
 }
 
 export function InspectorWidgetContent({
-  ctx,
   widgetId,
   pageId,
 }: InspectorWidgetContentProps) {
+  const ref = useEditorRef();
+
   // version 变更驱动重渲染，确保 render() 拿到最新实例数据
   const { version } = useWidgetLive();
 
@@ -25,18 +25,18 @@ export function InspectorWidgetContent({
   const widget = page.widgets.find(w => w.id === widgetId);
   if (!widget) return null;
 
-  const definition = ctx.registry.get(widget.type);
+  const definition = ref.registry.get(widget.type);
 
   const updateField = useCallback(
     (chain: (string | number)[], value: unknown) => {
-      ctx.update({
+      ref.update({
         target: 'widget',
         pageId,
         id: widgetId,
         operations: [{ kind: 'update', chain, value }],
       });
     },
-    [ctx, pageId, widgetId],
+    [ref, pageId, widgetId],
   );
 
   // version 作为依赖，widget 属性变更时重新计算 groups

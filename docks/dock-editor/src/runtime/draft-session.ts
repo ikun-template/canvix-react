@@ -1,32 +1,24 @@
 import type { Chronicle, OperationModel } from '@canvix-react/chronicle';
+import type { DraftSession } from '@canvix-react/editor-types';
 
-export interface TempSession {
-  /** Apply a temporary change (not pushed to history). */
-  update(model: OperationModel): void;
-  /** Commit all temp changes as a single history entry. */
-  commit(): void;
-  /** Rollback all temp changes, restoring original state. */
-  rollback(): void;
-}
-
-interface TempEntry {
+interface DraftEntry {
   forward: OperationModel;
   backward: OperationModel;
 }
 
-export function createTempSession(chronicle: Chronicle): TempSession {
-  const entries: TempEntry[] = [];
+export function createDraftSession(chronicle: Chronicle): DraftSession {
+  const entries: DraftEntry[] = [];
   let sealed = false;
 
   return {
     update(model: OperationModel) {
-      if (sealed) throw new Error('TempSession already sealed');
+      if (sealed) throw new Error('DraftSession already sealed');
       const backward = chronicle.update(model, { memorize: false });
       entries.push({ forward: model, backward });
     },
 
     commit() {
-      if (sealed) throw new Error('TempSession already sealed');
+      if (sealed) throw new Error('DraftSession already sealed');
       sealed = true;
       if (entries.length === 0) return;
 
@@ -51,7 +43,7 @@ export function createTempSession(chronicle: Chronicle): TempSession {
     },
 
     rollback() {
-      if (sealed) throw new Error('TempSession already sealed');
+      if (sealed) throw new Error('DraftSession already sealed');
       sealed = true;
       // Undo in reverse order
       for (let i = entries.length - 1; i >= 0; i--) {

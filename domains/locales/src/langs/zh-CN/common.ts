@@ -8,4 +8,6 @@ export default {
   'common.undo': '撤销',
   'common.redo': '重做',
   'common.apply': '应用',
+  'save.success': '保存成功',
+  'save.error': '保存失败',
 } as const;

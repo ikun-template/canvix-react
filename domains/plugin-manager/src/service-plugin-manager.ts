@@ -1,28 +1,35 @@
-import type {
-  LayoutPluginContext,
-  LayoutPluginDefinition,
-  LayoutPluginInstance,
-} from './types.js';
+/*
+ * Description: Service plugin manager — full lifecycle management for ServicePlugins.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
 
-interface ManagedPlugin {
-  definition: LayoutPluginDefinition;
-  instance?: LayoutPluginInstance;
+import type {
+  ServicePluginContext,
+  ServicePluginDefinition,
+  ServicePluginInstance,
+} from '@canvix-react/editor-types';
+
+interface ManagedServicePlugin {
+  definition: ServicePluginDefinition;
+  instance?: ServicePluginInstance;
 }
 
-export class PluginManager {
-  private plugins: ManagedPlugin[] = [];
+export class ServicePluginManager {
+  private plugins: ManagedServicePlugin[] = [];
 
-  register(definition: LayoutPluginDefinition): void {
+  register(definition: ServicePluginDefinition): void {
     this.plugins.push({ definition });
   }
 
-  registerAll(definitions: LayoutPluginDefinition[]): void {
+  registerAll(definitions: ServicePluginDefinition[]): void {
     for (const def of definitions) {
       this.register(def);
     }
   }
 
-  async setupAll(ctx: LayoutPluginContext): Promise<void> {
+  async setupAll(ctx: ServicePluginContext): Promise<void> {
     for (const plugin of this.plugins) {
       plugin.instance = await plugin.definition.setup(ctx);
     }

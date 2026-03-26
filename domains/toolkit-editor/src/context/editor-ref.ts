@@ -1,25 +1,24 @@
+/*
+ * Description: EditorRefContext — stable editor reference for imperative operations.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
+
 import type {
   Chronicle,
   OperationModel,
   UpdateOptions,
 } from '@canvix-react/chronicle';
-import type { TempSession } from '@canvix-react/dock-editor';
-import type { I18nManager } from '@canvix-react/i18n';
-import type { ThemeManager } from '@canvix-react/theme';
-import type { WidgetRegistry } from '@canvix-react/widget-registry';
-import { createContext, useContext, useSyncExternalStore } from 'react';
-
 import type {
+  DraftSession,
+  EditorConfig,
   EditorStateSnapshot,
-  ToolType,
-} from '../store/editor-state-store.js';
-
-export type PluginMeta = { name: string; slot?: string };
-
-export interface EditorConfig {
-  i18n: I18nManager;
-  theme: ThemeManager;
-}
+  EditorToolType,
+  LayoutPluginDefinition,
+  WidgetRegistry,
+} from '@canvix-react/editor-types';
+import { createContext, useContext, useSyncExternalStore } from 'react';
 
 export interface EditorRefContextValue {
   // 静态配置
@@ -28,23 +27,27 @@ export interface EditorRefContextValue {
   // 数据操作
   chronicle: Chronicle;
   registry: WidgetRegistry;
-  plugins: PluginMeta[];
+  plugins: Pick<LayoutPluginDefinition, 'name' | 'slot'>[];
   update(model: OperationModel, options?: UpdateOptions): void;
-  beginTemp(): TempSession;
+  beginDraft(): DraftSession;
 
   // 编辑器 UI 状态操作（来自 EditorStateStore）
   setActivePage(pageId: string): void;
   setSelection(widgetIds: string[]): void;
   setHoveredWidget(id: string | null): void;
-  setActiveTool(tool: ToolType): void;
+  setActiveTool(tool: EditorToolType): void;
   setZoom(zoom: number): void;
   setCamera(x: number, y: number): void;
   setInteracting(value: boolean): void;
   setFlowDrag(widgetId: string | null, size?: [number, number]): void;
   setFlowDropIndex(index: number | null): void;
+  setDirty(value: boolean): void;
   batch(fn: () => void): void;
   getSnapshot(): EditorStateSnapshot;
   onChange(listener: () => void): () => void;
+
+  /** Save the document. Returns a promise that resolves when save completes. */
+  save(): Promise<void>;
 }
 
 export const EditorRefContext = createContext<EditorRefContextValue | null>(

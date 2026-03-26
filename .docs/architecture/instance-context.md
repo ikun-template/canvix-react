@@ -1,43 +1,87 @@
-# 架构设计：实例上下文
+# 架构设计：实例上下文与数据流
 
-## 问题回顾
+## 核心问题
 
 Widget 级别执行变更需要 `pageId`，参考项目要求调用方每次显式传入，API 冗余且易错。本项目通过 React Context 逐级注入上下文，消费方无感获取上游信息。
 
 ---
 
-## Ref / Live 命名规则
+## Chronicle：数据引擎
 
-所有 Context 遵循 **Ref / Live 双层** 模式：
+Chronicle（`@canvix-react/chronicle`）是文档数据的唯一真实来源。
+
+### 职责边界
+
+Chronicle **只做**三件事：
+
+1. **持有文档状态**：`doc: DocumentRuntime`（可变对象，直接持有引用）
+2. **应用操作**：`update(model)` 接收 OperationModel，原地修改文档，记录逆操作到 History
+3. **通知变更**：`onUpdate(listener)` 扁平广播，所有监听器收到同一 OperationModel
+
+Chronicle **不做**：
+
+- 不做 page/widget 级别的订阅过滤（由 Context 层负责）
+- 不提供 React 集成（框架无关，方便未来支持其他框架或 headless 场景）
+- 不管理编辑器 UI 状态（zoom、selection 等由 EditorStateStore 管理）
+
+### API
+
+```typescript
+class Chronicle {
+  getDocument(): DocumentRuntime; // 返回可变文档引用
+  getVersion(): number; // 单调递增版本号
+  update(model: OperationModel, options?: UpdateOptions): void;
+  undo(): void;
+  redo(): void;
+  onUpdate(listener: (model: OperationModel) => void): () => void;
+}
+```
+
+### 与 Context 层的关系
+
+```
+Chronicle（扁平数据引擎）
+    │
+    │  onUpdate() 扁平广播
+    │
+    ├─→ PageLiveProvider 内部过滤：仅匹配 pageId 的操作触发 version++
+    ├─→ WidgetLiveProvider 内部过滤：仅匹配 widgetId 的操作触发 version++
+    ├─→ DocumentLiveProvider 内部过滤：仅 document 级操作触发 version++
+    └─→ useChronicleSelective 内部过滤：自定义 shouldUpdate 函数
+```
+
+Context 层是 Chronicle 的 **React 投影**，负责将扁平通知转化为作用域化的响应式更新。
+
+---
+
+## Context 层级
+
+### Ref / Live 双层模式
 
 | 层       | 命名后缀         | 职责                               | 稳定性                               | 消费方式       |
 | -------- | ---------------- | ---------------------------------- | ------------------------------------ | -------------- |
 | **Ref**  | `XxxRefContext`  | 原始数据源引用 + 命令式操作        | 值在生命周期内稳定，不触发 re-render | `useXxxRef()`  |
 | **Live** | `XxxLiveContext` | 基于 Ref 的响应式投影 + 运行时状态 | 数据变化时触发消费者 re-render       | `useXxxLive()` |
 
-**Ref 层** 持有的是"数据从哪来、怎么改"——chronicle 引用、getDocument 方法、状态 setters 等。值稳定，适合传递给命令式闭包（拖拽处理、事件回调）。
+**Ref 层** 持有"数据从哪来、怎么改"——getDocument 方法、状态 setters 等。值稳定，适合传递给命令式闭包（拖拽处理、事件回调）。
 
-**Live 层** 是 Ref 的派生——将 Ref 的原始数据转化为 React 可消费的响应式快照。除了 Ref 的投影，还可包含模块自身的运行时状态数据（如编辑器的 zoom、selection、hover 等）。subscribe 机制将更新通知与数据获取解耦。
+**Live 层** 是 Ref 的派生——将 Ref 的原始数据转化为 React 可消费的响应式快照。subscribe 机制将更新通知与数据获取解耦。
 
-**派生关系**：Live 层 Provider 内部通过 `useXxxRef()` 获取数据源，经 `useSyncExternalStore` 或 subscribe 模式桥接为响应式 context。
-
----
-
-## Context 层级
+### 层级图
 
 ```
-EditorRefContext                                    ← Ref：config, chronicle, registry, 状态 setters
+EditorRefContext                          ← Ref：数据操作 + UI 状态操作
 │
-├── DocumentRefContext                              ← Ref：getDocument
+├── DocumentRefContext                    ← Ref：getDocument（数据源抽象层）
 │   │
-│   ├── DocumentLiveContext                         ← Live：派生自 DocumentRef（title, pageIds, version）
+│   ├── DocumentLiveContext               ← Live：文档级响应式（title, pageIds, version）
 │   │   │
-│   │   ├── PageLiveContext                         ← Live：当前 page 响应式数据
+│   │   ├── PageLiveContext               ← Live：当前 page 响应式数据
 │   │   │   │
-│   │   │   └── WidgetLiveContext                   ← Live：当前 widget 响应式数据
+│   │   │   └── WidgetLiveContext         ← Live：当前 widget 身份 + 版本
 │   │   │
 │
-├── EditorLive（hook-based）                        ← useEditorLive() 直接从 EditorRef store 读取
+├── EditorLive（hook-based）              ← useEditorLive() 直接从 EditorRef store 读取
 ```
 
 > `EditorLive` 不通过 Provider 传递，而是 `useEditorLive()` 内部直接从 `useEditorRef()` 获取 store 的 `onChange`/`getSnapshot`，经 `useSelectiveStore` 实现选择性订阅。
@@ -58,18 +102,31 @@ EditorRefContext                                    ← Ref：config, chronicle,
 </EditorRefProvider>
 ```
 
-### Context 内容
+---
+
+## Context 定义
+
+### DocumentRefContext — 数据源抽象层
 
 ```typescript
-// ─── @canvix-react/toolkit-shared ───
-
-// Ref：document 命令式引用（稳定，不触发 re-render）
+// @canvix-react/toolkit-shared
 interface DocumentRefContextValue {
-  document: Readonly<DocumentRuntime>;
   getDocument: () => Readonly<DocumentRuntime>;
 }
+```
 
-// Live：document 响应式数据（subscribe 触发时 version 变化）
+**设计要点**：
+
+- 仅暴露 `getDocument()` 方法，不暴露 `document` 直接引用（避免可变对象被误用）
+- 不依赖 Chronicle（viewer 模式下可用 props 驱动的静态数据源）
+- 编辑器模式下由 App.tsx 桥接：`getDocument: () => chronicle.getDocument()`
+
+**消费者**：所有 reader hooks（useDocumentReader, usePageReader, useWidgetReader）、editor hooks（useDocumentEditor, usePageEditor, useWidgetEditor）
+
+### DocumentLiveContext — 文档级响应式
+
+```typescript
+// @canvix-react/toolkit-shared
 interface DocumentLiveContextValue {
   title: string;
   desc: string;
@@ -77,19 +134,33 @@ interface DocumentLiveContextValue {
   pageIds: string[];
   version: number;
 }
+```
 
-// Live：page 响应式数据
+**消费者**：page-explorer（页面列表增删）、document title bar（标题变更）
+
+**subscribe 机制**：编辑器模式下过滤 `model.target === 'document'` 的操作；viewer 模式下由 props 变化驱动。
+
+### PageLiveContext — 页面级响应式
+
+```typescript
+// @canvix-react/toolkit-shared
 interface PageLiveContextValue {
   pageId: string;
   name: string;
-  layout: PageRuntime['layout']; // size, direction, wrap, gap, align, justify, padding
+  layout: PageRuntime['layout'];
   foreground: string;
   background: string;
   widgetIds: string[];
   version: number;
 }
+```
 
-// Live：widget 响应式数据
+**消费者**：canvas（page-editor）、inspector（inspector-page）、reader hooks
+
+### WidgetLiveContext — Widget 身份与版本
+
+```typescript
+// @canvix-react/toolkit-shared
 interface WidgetLiveContextValue {
   widgetId: string;
   pageId: string;
@@ -97,41 +168,58 @@ interface WidgetLiveContextValue {
   slotName: string | null;
   version: number;
 }
+```
 
-// ─── @canvix-react/toolkit-editor ───
+**设计要点**：不含 widget 数据本身（仅身份信息）。实际数据通过 `useDocumentRef().getDocument()` 按需查找。version 驱动消费者 re-render 后重新获取最新数据。
 
-// Ref：编辑器命令式引用（稳定，不触发 re-render）
+**消费者**：page-editor（widget 渲染）、inspector（widget 属性编辑）、reader hooks
+
+### EditorRefContext — 编辑器命令式引用
+
+```typescript
+// @canvix-react/toolkit-editor
 interface EditorRefContextValue {
-  // 静态配置
-  config: EditorConfig; // { i18n: I18nManager; theme: ThemeManager }
+  // ── 静态配置 ──
+  config: EditorConfig;
 
-  // 数据操作
+  // ── 数据操作 ──
   chronicle: Chronicle;
   registry: WidgetRegistry;
-  plugins: PluginMeta[];
+  plugins: Pick<LayoutPluginDefinition, 'name' | 'slot'>[];
   update(model: OperationModel, options?: UpdateOptions): void;
-  beginTemp(): TempSession;
+  beginTemp(): DraftSession;
 
-  // 编辑器 UI 状态操作（来自 EditorStateStore）
+  // ── UI 状态操作（来自 EditorStateStore）──
   setActivePage(pageId: string): void;
   setSelection(widgetIds: string[]): void;
   setHoveredWidget(id: string | null): void;
-  setActiveTool(tool: ToolType): void;
+  setActiveTool(tool: EditorToolType): void;
   setZoom(zoom: number): void;
   setCamera(x: number, y: number): void;
   setInteracting(value: boolean): void;
   setFlowDrag(widgetId: string | null, size?: [number, number]): void;
   setFlowDropIndex(index: number | null): void;
+  batch(fn: () => void): void;
   getSnapshot(): EditorStateSnapshot;
   onChange(listener: () => void): () => void;
 }
+```
 
-// Live：编辑器 UI 状态响应式快照（hook-based，非 context provider）
-interface EditorLiveContextValue {
+**设计要点**：
+
+- 所有字段在应用生命周期内稳定（同一 store/chronicle 实例的方法引用），不触发 re-render
+- 逻辑分两组但不物理拆分：数据操作组（chronicle, update, beginTemp）+ UI 状态组（setXxx, getSnapshot, onChange）
+- `chronicle` 暴露在此处是因为 `useChronicleSelective` 等 editor hooks 需要直接访问
+
+### EditorLive — UI 状态响应式（hook-based）
+
+```typescript
+// @canvix-react/toolkit-editor
+interface EditorStateSnapshot {
   activePageId: string;
   selectedWidgetIds: string[];
   hoveredWidgetId: string | null;
-  activeTool: ToolType;
+  activeTool: EditorToolType;
   interacting: boolean;
   zoom: number;
   camera: { x: number; y: number };
@@ -141,38 +229,39 @@ interface EditorLiveContextValue {
 }
 ```
 
-### 消费方式
-
-每级提供对应的 hook：
+消费方式（选择性订阅，仅关注的字段变化时 re-render）：
 
 ```typescript
-// ─── 数据层 ───
-const { document, getDocument } = useDocumentRef();     // Ref：命令式引用
-const { title, pageIds, version } = useDocumentLive();  // Live：响应式
-const { pageId, name, layout, ... } = usePageLive();    // Live：响应式
-const { widgetId, pageId, ... } = useWidgetLive();      // Live：响应式
-
-// ─── 编辑器层 ───
-const ref = useEditorRef();                              // Ref：命令式引用
-ref.update(model);                                       //   数据操作
-ref.setSelection([widgetId]);                            //   UI 状态写入
-ref.getSnapshot().zoom;                                  //   UI 状态同步读取
-
-const { activePageId, zoom, ... } = useEditorLive();     // Live：全量快照（任意字段变化都 re-render）
-const activePageId = useEditorLive('activePageId');       // Live：单字段（仅该字段变化时 re-render）
-const { zoom, camera } = useEditorLive('zoom', 'camera');// Live：多字段 Pick（shallow-equal 稳定化）
-const derived = useEditorLive(s => s.activeTool);         // Live：selector 派生（shallow-equal 稳定化）
-
-// ─── 配置（从 EditorRef.config 派生）───
-const { t, locale, setLocale } = useI18n();              // i18n（内部 useSyncExternalStore）
-const { theme, setTheme } = useTheme();                  // 主题（内部 useSyncExternalStore）
+const { activePageId, zoom, ... } = useEditorLive();      // 全量快照
+const activePageId = useEditorLive('activePageId');         // 单字段
+const { zoom, camera } = useEditorLive('zoom', 'camera');  // 多字段 Pick
+const derived = useEditorLive(s => s.activeTool);           // selector 派生
 ```
 
-### 编辑器状态架构
+---
+
+## 数据获取：布局插件组件
+
+布局插件组件统一通过 React hooks 获取所有能力，**不接收 props**。
+
+> **注**：布局插件的 `LayoutPluginDefinition.component` 类型为 `ComponentType`（无 props）。插件注册时的 `setup()` 仅供 ServicePlugin 使用。详见 [dock-plugin.md](./dock-plugin.md)。
+
+```typescript
+// 布局插件组件内部
+const ref = useEditorRef(); // 数据操作 + UI 状态操作
+const { zoom, camera } = useEditorLive('zoom', 'camera'); // UI 状态响应式
+const doc = useChronicleSelective(shouldUpdate); // 选择性 Chronicle 订阅
+
+// 配置
+const { t, locale, setLocale } = useI18n();
+const { theme, setTheme } = useTheme();
+```
+
+---
+
+## 编辑器状态架构
 
 `EditorStateStore` 是一个轻量 external store（subscribe/getSnapshot 模式），由 App 层创建并注入 `EditorRefContext`。
-
-`useEditorLive()` 内部通过 `useEditorRef()` 获取 store 的 `onChange` / `getSnapshot`，经 `useSelectiveStore`（基于 `useSyncExternalStore` + shallow-equal）实现选择性订阅：
 
 ```
 EditorRefContext
@@ -187,6 +276,44 @@ EditorRefContext
 ```
 
 交互处理函数（`createDragMove`、`createDragResize`、`createFlowDragMove`、`useZoomPan`）通过 `ref.getSnapshot()` 同步读取 zoom/camera，通过 `ref.setXxx()` 写入状态。
+
+---
+
+## 稳定性保证
+
+### Context 值稳定性
+
+- `EditorRefContext` 所有字段在应用生命周期内稳定（同一 store/chronicle 实例的方法引用），不触发 re-render
+- `DocumentRefContext` 的 `getDocument` 在应用生命周期内稳定（同一 chronicle 实例的方法引用），不触发 re-render
+- `useEditorLive()` 由 `useSelectiveStore` 驱动，支持选择性订阅，仅关注的字段变化时触发 re-render
+- Live Context 包含 `version` 字段，仅在相关 subscribe 回调触发时递增，只影响订阅了该 context 的消费者
+
+### 数据读取与 Context 分离
+
+- Context 传递"我是谁"（id）和"当前版本"（version），不传递完整数据
+- 数据读取通过 reader hooks 的 get 方法按需获取
+- subscribe 机制将更新通知与数据获取解耦
+
+---
+
+## 嵌套 Widget 的 Context 传递
+
+Widget 渲染 slot 内的子 widget 时，为每个子 widget 提供新的 WidgetLiveProvider：
+
+```
+<WidgetLiveProvider widgetId="A" subscribe={...}>     ← Widget A
+  <SlotRenderer slotName="content">
+    <WidgetLiveProvider widgetId="C"                   ← Widget C（A 的 slot 子级）
+      parentId="A"
+      slotName="content"
+      subscribe={...}>
+      ...
+    </WidgetLiveProvider>
+  </SlotRenderer>
+</WidgetLiveProvider>
+```
+
+子 widget 通过 `useWidget()` 可获取完整的层级信息（自身 id、所属 page、父 widget、所在 slot），用于组装 Operation 或 UI 展示（如面包屑导航）。
 
 ---
 
@@ -210,20 +337,12 @@ function useSelectiveStore<Snapshot, Result>(
   subscribe: (cb: () => void) => () => void,
   getSnapshot: () => Snapshot,
   selector: (s: Snapshot) => Result,
-): Result; // useSyncExternalStore + selector + shallow-equal 缓存
+): Result;
 
 // Reader hooks
-function useDocumentReader(): {
-  getDocument(): Readonly<DocumentRuntime>;
-};
-
-function usePageReader(): {
-  getPage(): Readonly<PageRuntime>;
-};
-
-function useWidgetReader(): {
-  getWidget(): Readonly<WidgetRuntime>;
-};
+function useDocumentReader(): { getDocument(): Readonly<DocumentRuntime> };
+function usePageReader(): { getPage(): Readonly<PageRuntime> };
+function useWidgetReader(): { getWidget(): Readonly<WidgetRuntime> };
 ```
 
 `DocumentLiveProvider` / `PageLiveProvider` / `WidgetLiveProvider` 通过可选 `subscribe` prop 抽象更新源：
@@ -267,13 +386,21 @@ function useChronicleData(): Readonly<DocumentRuntime>;
 function useChronicleSelective(shouldUpdate?): Readonly<DocumentRuntime>;
 
 // 编辑器状态 hooks
-function useEditorRef(): EditorRefContextValue;      // Ref：命令式引用 + 状态操作
+function useEditorRef(): EditorRefContextValue;
 
 // 编辑器 Live hooks（选择性订阅，无 Provider）
-function useEditorLive(): EditorLiveContextValue;                       // 全量快照
-function useEditorLive<K extends keyof EditorLiveContextValue>(key: K): EditorLiveContextValue[K];  // 单字段
-function useEditorLive<K extends keyof EditorLiveContextValue>(...keys: K[]): Pick<...>;            // 多字段
-function useEditorLive<R>(selector: (s: EditorLiveContextValue) => R): R;                           // selector
+function useEditorLive(): EditorStateSnapshot;
+function useEditorLive<K extends keyof EditorStateSnapshot>(
+  key: K,
+): EditorStateSnapshot[K];
+function useEditorLive<K extends keyof EditorStateSnapshot>(
+  ...keys: K[]
+): Pick<EditorStateSnapshot, K>;
+function useEditorLive<R>(selector: (s: EditorStateSnapshot) => R): R;
+
+// 配置 hooks（从 EditorRef.config 派生）
+function useI18n(): { t; locale; setLocale; supportedLocales };
+function useTheme(): { theme; setTheme };
 ```
 
 ### Widget 内使用
@@ -289,46 +416,6 @@ const { getWidget, update } = useWidgetEditor();
 import { useWidgetReader } from '@canvix-react/toolkit-shared';
 const { getWidget } = useWidgetReader();
 ```
-
----
-
-## 稳定性保证
-
-### Context 值稳定性
-
-- `EditorRefContext` 所有字段在应用生命周期内稳定（同一 store/chronicle 实例的方法引用），不触发 re-render
-- `DocumentRefContext` 中的 `document` 和 `getDocument` 在应用生命周期内稳定（同一 chronicle 实例），不触发 re-render
-- `useEditorLive()` 由 `useSelectiveStore` 驱动，支持选择性订阅，仅关注的字段变化时触发 re-render
-- `DocumentLiveContext` 包含 `version` 等响应式数据，version 仅在 subscribe 回调触发时变化，只影响订阅了该 context 的消费者
-- `PageLiveContext` 同理，version 仅在 page 相关 subscribe 触发时变化
-- `WidgetLiveContext` 同理，仅在对应 widget 的 subscribe 触发时变化
-
-### 数据读取与 Context 分离
-
-- Context 传递"我是谁"（id）和"当前版本"（version），不传递完整数据
-- 数据读取通过 reader hooks 的 get 方法按需获取
-- subscribe 机制将更新通知与数据获取解耦
-
----
-
-## 嵌套 Widget 的 Context 传递
-
-Widget 渲染 slot 内的子 widget 时，为每个子 widget 提供新的 WidgetLiveProvider：
-
-```
-<WidgetLiveProvider widgetId="A" subscribe={...}>     ← Widget A
-  <SlotRenderer slotName="content">
-    <WidgetLiveProvider widgetId="C"                   ← Widget C（A 的 slot 子级）
-      parentId="A"
-      slotName="content"
-      subscribe={...}>
-      ...
-    </WidgetLiveProvider>
-  </SlotRenderer>
-</WidgetLiveProvider>
-```
-
-子 widget 通过 `useWidget()` 可获取完整的层级信息（自身 id、所属 page、父 widget、所在 slot），用于组装 Operation 或 UI 展示（如面包屑导航）。
 
 ---
 
@@ -348,7 +435,6 @@ domains/
 
 - **Runtime** 是 dock 内部的运行时中枢，负责初始化 Chronicle、管理插件生命周期、调度钩子。不直接暴露给布局模块或 widget
 - **Toolkit** 是 Runtime 对外的能力投影。布局模块和 widget 只依赖 Toolkit，不感知 Runtime 的存在
-- 未来插件扩展 SDK 基于 Toolkit 二次封装，而非直接依赖 Runtime
 
 ---
 
@@ -361,7 +447,7 @@ domains/
 │   └── src/
 │       ├── context/
 │       │   ├── document-ref.ts   # DocumentRefContext + DocumentRefProvider + useDocumentRef
-│       │   ├── document-live.ts  # DocumentLiveContext + useDocumentLive + useDocument
+│       │   ├── document-live.ts  # DocumentLiveContext + useDocumentLive
 │       │   ├── page-live.ts      # PageLiveContext + PageProvider + usePageLive
 │       │   └── widget-live.ts    # WidgetLiveContext + WidgetProvider + useWidgetLive
 │       ├── providers/
@@ -373,8 +459,8 @@ domains/
 │       │   ├── use-page-reader.ts
 │       │   └── use-widget-reader.ts
 │       ├── utils/
-│       │   ├── shallow-equal.ts         # 通用浅比较
-│       │   └── use-selective-store.ts   # useSyncExternalStore + selector + shallow-equal
+│       │   ├── shallow-equal.ts
+│       │   └── use-selective-store.ts
 │       └── index.ts
 │
 └── toolkit-editor/
@@ -384,7 +470,7 @@ domains/
         │   ├── editor-ref.ts     # EditorRefContext + useEditorRef + useI18n + useTheme
         │   └── editor-live.ts    # useEditorLive（选择性订阅，直接读取 EditorRef store）
         ├── store/
-        │   └── editor-state-store.ts  # EditorStateStore（轻量 external store，兼容 useSyncExternalStore）
+        │   └── editor-state-store.ts  # EditorStateStore
         ├── hooks/
         │   ├── use-document-editor.ts
         │   ├── use-page-editor.ts
@@ -393,3 +479,13 @@ domains/
         │   └── use-chronicle-selective.ts
         └── index.ts
 ```
+
+---
+
+## Phase 2 迁移要点
+
+1. `DocumentRefContextValue` 移除 `document` 字段，仅保留 `getDocument()`
+2. App.tsx 中 `docRefValue` 简化
+3. 布局插件组件移除 `ctx` prop（配合 dock-plugin.md 的 LayoutPlugin 简化）
+4. 确认 DocumentLiveContext 消费者（page-explorer 应使用 `useDocumentLive()`）
+5. 更新 `useDocumentRef()` 的返回类型

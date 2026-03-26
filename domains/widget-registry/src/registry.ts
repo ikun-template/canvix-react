@@ -1,16 +1,17 @@
-import type { WidgetDefinition } from './types.js';
+/*
+ * Description: Widget registry implementation.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
 
-export interface WidgetRegistry {
-  register(definition: WidgetDefinition): void;
-  registerAll(definitions: WidgetDefinition[]): void;
-  get(type: string): WidgetDefinition | undefined;
-  getAll(): WidgetDefinition[];
-  getByCategory(category: string): WidgetDefinition[];
-  has(type: string): boolean;
-}
+import type {
+  WidgetPluginDefinition,
+  WidgetRegistry,
+} from '@canvix-react/editor-types';
 
 export function createWidgetRegistry(): WidgetRegistry {
-  const map = new Map<string, WidgetDefinition>();
+  const map = new Map<string, WidgetPluginDefinition>();
 
   return {
     register(definition) {

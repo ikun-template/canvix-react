@@ -8,6 +8,7 @@ export {
   MousePointer2,
   PenTool,
   Plus,
+  Save,
   Settings,
   Square,
   Type,

@@ -1,4 +1,3 @@
-import type { LayoutPluginContext } from '@canvix-react/dock-editor';
 import {
   PiColor,
   PiNumber,
@@ -6,52 +5,51 @@ import {
   PiSelect,
   PiText,
 } from '@canvix-react/inspector-controls';
-import { useI18n } from '@canvix-react/toolkit-editor';
-import type { OperationModel } from '@canvix-react/toolkit-editor';
+import {
+  useEditorRef,
+  useI18n,
+  type OperationModel,
+} from '@canvix-react/toolkit-editor';
 import { PageLiveProvider, usePageLive } from '@canvix-react/toolkit-shared';
 import { FieldGroup } from '@canvix-react/ui-inspector';
 import { useCallback } from 'react';
 
 interface InspectorPageProps {
-  ctx: LayoutPluginContext;
   pageId: string;
 }
 
-export function InspectorPage({ ctx, pageId }: InspectorPageProps) {
+export function InspectorPage({ pageId }: InspectorPageProps) {
+  const ref = useEditorRef();
+
   const subscribePage = useCallback(
     (cb: () => void) =>
-      ctx.chronicle.onUpdate((model: OperationModel) => {
+      ref.chronicle.onUpdate((model: OperationModel) => {
         if (model.target === 'page' && model.id === pageId) cb();
       }),
-    [ctx.chronicle, pageId],
+    [ref.chronicle, pageId],
   );
 
   return (
     <PageLiveProvider pageId={pageId} subscribe={subscribePage}>
-      <InspectorPageContent ctx={ctx} pageId={pageId} />
+      <InspectorPageContent pageId={pageId} />
     </PageLiveProvider>
   );
 }
 
-function InspectorPageContent({
-  ctx,
-  pageId,
-}: {
-  ctx: LayoutPluginContext;
-  pageId: string;
-}) {
+function InspectorPageContent({ pageId }: { pageId: string }) {
   const { t } = useI18n();
+  const ref = useEditorRef();
   const page = usePageLive();
 
   const updateField = useCallback(
     (chain: (string | number)[], value: unknown) => {
-      ctx.update({
+      ref.update({
         target: 'page',
         id: pageId,
         operations: [{ kind: 'update', chain, value }],
       });
     },
-    [ctx, pageId],
+    [ref, pageId],
   );
 
   return (
@@ -75,7 +73,7 @@ function InspectorPageContent({
             <div className="min-w-0 flex-1">
               <PiNumber
                 label={t('inspector.size.width')}
-                value={page.layout.size[0]}
+                value={page.layout.size?.[0] ?? 0}
                 onChange={v => updateField(['layout', 'size', 0], v)}
                 min={1}
               />
@@ -83,7 +81,7 @@ function InspectorPageContent({
             <div className="min-w-0 flex-1">
               <PiNumber
                 label={t('inspector.size.height')}
-                value={page.layout.size[1]}
+                value={page.layout.size?.[1] ?? 0}
                 onChange={v => updateField(['layout', 'size', 1], v)}
                 min={1}
               />

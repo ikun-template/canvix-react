@@ -1,6 +1,6 @@
-import type { PropertyGroup } from '@canvix-react/widget-registry';
+import type { InspectorGroup } from '@canvix-react/editor-types';
 
-export function createBasePropertyGroup(): PropertyGroup {
+export function createBasePropertyGroup(): InspectorGroup {
   return {
     title: '基础属性',
     properties: [
