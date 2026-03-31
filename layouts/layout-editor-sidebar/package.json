@@ -6,10 +6,12 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@canvix-react/dnd-sort": "workspace:*",
     "@canvix-react/editor-types": "workspace:*",
     "@canvix-react/icon": "workspace:*",
     "@canvix-react/layout-editor-settings": "workspace:*",
     "@canvix-react/schema-page": "workspace:*",
+    "@canvix-react/schema-widget": "workspace:*",
     "@canvix-react/toolkit-editor": "workspace:*",
     "@canvix-react/ui": "workspace:*",
     "@canvix-react/widget-registry": "workspace:*"

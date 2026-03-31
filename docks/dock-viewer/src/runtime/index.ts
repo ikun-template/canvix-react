@@ -1,17 +1,25 @@
-import { Chronicle } from '@canvix-react/chronicle';
-import type { DocumentRuntime } from '@canvix-react/schema-document';
-import type { WidgetRegistry } from '@canvix-react/widget-registry';
+/*
+ * Description: Viewer runtime — minimal runtime for read-only document rendering.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
 
-import { EventBus } from './event-bus.js';
-import { HookSystem } from './hook-system.js';
-import { PluginManager } from './plugin-manager.js';
+import { Chronicle } from '@canvix-react/chronicle';
+import { EventBus, HookSystem } from '@canvix-react/infra';
+import type { DocumentRuntime } from '@canvix-react/schema-document';
+import type {
+  LayoutPluginDefinition,
+  WidgetRegistry,
+} from '@canvix-react/shared-types';
+
 import { TokenResolver } from './token-resolver.js';
-import type { PluginContext, PluginDefinition } from './types.js';
+import type { ViewerPluginContext } from './types.js';
 
 export interface ViewerRuntimeOptions {
   document: DocumentRuntime;
   registry: WidgetRegistry;
-  plugins: PluginDefinition[];
+  plugins: LayoutPluginDefinition[];
   container: HTMLElement;
 }
 
@@ -22,7 +30,7 @@ export class ViewerRuntime {
   readonly registry: WidgetRegistry;
   readonly tokenResolver: TokenResolver;
 
-  private pluginManager: PluginManager;
+  private plugins: LayoutPluginDefinition[];
   private container: HTMLElement;
 
   constructor(options: ViewerRuntimeOptions) {
@@ -31,33 +39,18 @@ export class ViewerRuntime {
     this.events = new EventBus();
     this.registry = options.registry;
     this.tokenResolver = new TokenResolver();
-    this.pluginManager = new PluginManager();
+    this.plugins = options.plugins;
     this.container = options.container;
 
     this.hooks.register('app:ready', 'sync');
     this.hooks.register('app:beforeDestroy', 'sync');
-
-    this.pluginManager.registerAll(options.plugins);
   }
 
-  async start(): Promise<void> {
-    const ctx = this.createPluginContext();
-    await this.pluginManager.setupAll(ctx);
-    await this.pluginManager.mountAll();
-    await this.pluginManager.activateAll();
-    this.hooks.call('app:ready', undefined);
+  getPlugins(): LayoutPluginDefinition[] {
+    return this.plugins;
   }
 
-  async destroy(): Promise<void> {
-    this.hooks.call('app:beforeDestroy', undefined);
-    await this.pluginManager.deactivateAll();
-    await this.pluginManager.unmountAll();
-    await this.pluginManager.destroyAll();
-    this.hooks.clear();
-    this.events.clear();
-  }
-
-  private createPluginContext(): PluginContext {
+  createPluginContext(): ViewerPluginContext {
     const { tokenResolver } = this;
 
     return {
@@ -68,10 +61,19 @@ export class ViewerRuntime {
       tokenResolver,
       getSlotElement: (name: string) =>
         this.container.querySelector<HTMLElement>(`[data-slot="${name}"]`),
-
       resolveToken(value: string, context) {
         return tokenResolver.resolve(value, context);
       },
     };
+  }
+
+  async start(): Promise<void> {
+    this.hooks.call('app:ready', undefined);
+  }
+
+  async destroy(): Promise<void> {
+    this.hooks.call('app:beforeDestroy', undefined);
+    this.hooks.clear();
+    this.events.clear();
   }
 }

@@ -2,7 +2,8 @@ import type { WidgetRenderProps } from '@canvix-react/widget-registry';
 
 import type { ImageData } from './types.js';
 
-export function ImageViewer({ data }: WidgetRenderProps<ImageData>) {
+export function ImageViewer({ widget }: WidgetRenderProps<ImageData>) {
+  const { custom_data: data } = widget;
   if (!data.src) return null;
 
   return (

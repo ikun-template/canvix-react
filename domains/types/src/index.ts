@@ -1,37 +1,33 @@
 /*
- * Description: Centralized editor type definitions.
+ * Description: Editor type definitions — re-exports shared-types + editor-only types.
  *
  * Author: xiaoyown
  * Created: 2026-03-26
  */
 
-// Plugin interfaces
+// Re-export all shared types (editor side single entry point)
+export * from '@canvix-react/shared-types';
+
+// Editor-only plugin interfaces
 export type {
-  LayoutPluginDefinition,
   ServicePluginDefinition,
   ServicePluginContext,
   ServicePluginInstance,
   DraftSession,
-  HookSystem,
-  EventBus,
-  EventMap,
   ShortcutBinding,
   ShortcutRegistry,
 } from './plugin.js';
 
-// Widget types
+// Editor-only widget types (inspector)
 export type {
-  WidgetPluginDefinition,
-  WidgetMeta,
-  WidgetRenderMap,
-  WidgetRenderProps,
+  EditorWidgetPluginDefinition,
   WidgetInspectorConfig,
   InspectorGroup,
   InspectorField,
-  WidgetSlot,
+  InspectorFieldRenderProps,
+  InspectorFieldInterceptor,
   Chain,
   UpdateField,
-  WidgetRegistry,
 } from './widget.js';
 
 // Editor state

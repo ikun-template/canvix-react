@@ -39,7 +39,7 @@ export function WidgetEditor({ widgetId }: { widgetId: string }) {
         padding: widget.layout.padding.map(v => `${v}px`).join(' '),
       }}
     >
-      {Component && <Component data={widget.custom_data} />}
+      {Component && <Component widget={widget} />}
     </div>
   );
 }

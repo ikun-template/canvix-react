@@ -2,7 +2,8 @@ import type { WidgetRenderProps } from '@canvix-react/widget-registry';
 
 import type { TextData } from './types.js';
 
-export function TextRender({ data }: WidgetRenderProps<TextData>) {
+export function TextRender({ widget }: WidgetRenderProps<TextData>) {
+  const { custom_data: data } = widget;
   return (
     <div
       style={{

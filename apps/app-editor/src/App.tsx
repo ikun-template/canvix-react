@@ -11,6 +11,7 @@ import { toolboxPlugin } from '@canvix-react/layout-editor-toolbox';
 import { editorMessages } from '@canvix-react/locales';
 import { serialize, servicesAdapter } from '@canvix-react/serializer';
 import { createThemeManager } from '@canvix-react/theme';
+import { containerDefinition } from '@canvix-react/widget-container/definition';
 import { imageDefinition } from '@canvix-react/widget-image/definition';
 import { shapeDefinition } from '@canvix-react/widget-shape/definition';
 import { textDefinition } from '@canvix-react/widget-text/definition';
@@ -44,7 +45,12 @@ const editorConfig: EditorConfig = {
   theme: themeManager,
 };
 
-const widgets = [textDefinition, imageDefinition, shapeDefinition];
+const widgets = [
+  textDefinition,
+  imageDefinition,
+  shapeDefinition,
+  containerDefinition,
+];
 
 const saveAdapter = { serialize, persist: servicesAdapter.save };
 

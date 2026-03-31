@@ -7,7 +7,6 @@
   },
   "dependencies": {
     "@canvix-react/chronicle": "workspace:*",
-    "@canvix-react/dock-editor": "workspace:*",
     "@canvix-react/editor-types": "workspace:*",
     "@canvix-react/i18n": "workspace:*",
     "@canvix-react/schema-document": "workspace:*",

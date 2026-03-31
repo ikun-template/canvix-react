@@ -42,6 +42,30 @@ export function useWidgetEditor() {
         const doc = getDocument();
         const page = doc.pages.find(p => p.id === pageId);
         const parent = page?.widgets.find(w => w.id === widgetId);
+
+        // Ensure slots object and slot array exist
+        const ensureOps: {
+          kind: 'update';
+          chain: (string | number)[];
+          value: unknown;
+        }[] = [];
+        if (!parent?.slots) {
+          ensureOps.push({ kind: 'update', chain: ['slots'], value: {} });
+        }
+        if (!parent?.slots?.[slotName]) {
+          ensureOps.push({
+            kind: 'update',
+            chain: ['slots', slotName],
+            value: [],
+          });
+        }
+        if (ensureOps.length > 0) {
+          chronicle.update(
+            { target: 'widget', pageId, id: widgetId, operations: ensureOps },
+            { memorize: false },
+          );
+        }
+
         const slotArr = parent?.slots?.[slotName];
         const idx = slotArr ? slotArr.length : 0;
         chronicle.update(

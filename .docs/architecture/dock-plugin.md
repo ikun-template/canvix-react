@@ -92,7 +92,7 @@ interface WidgetPluginDefinition<T = unknown> {
   /** 渲染组件（编辑态 + 查看态） */
   render: WidgetRenderMap;
   /** 属性面板定义（可选） */
-  inspector?: WidgetInspectorConfig;
+  inspector?: WidgetInspectorConfig; // 多面板结构，当前支持 properties
   /** 插槽声明（可选，允许子 widget 拖入） */
   slots?: WidgetSlot[]; // 可接受子 widget 的插槽声明
 }
@@ -112,8 +112,12 @@ interface WidgetRenderMap {
 interface WidgetSlot {
   name: string;
   label: string;
-  accept?: string[]; // 可接受的 widget 类型白名单
-  maxCount?: number; // 插槽内最大 widget 数量
+  accept?: (ctx: SlotAcceptContext) => boolean; // 动态校验，未提供则接受所有
+}
+
+interface SlotAcceptContext {
+  owner: WidgetRuntime; // 插槽所属 widget 实例
+  incoming: WidgetRuntime[]; // 即将插入的 widget 列表（可能多个）
 }
 ```
 
@@ -121,7 +125,7 @@ interface WidgetSlot {
 
 - Widget 插件通过 `WidgetRegistry.register()` 注册，在 bootstrap 阶段完成（早于 Runtime 启动）
 - 渲染组件通过 React hooks 获取数据（`useWidgetReader()` / `useWidgetEditor()`）
-- 属性面板通过 `inspector.render(data)` 返回 `InspectorGroup[]`，由 Inspector 布局插件统一渲染
+- 属性面板通过 `inspector.properties(widget)` 返回 `InspectorGroup[]`，由 Inspector 布局插件统一渲染
 - 插槽通过 `slots` 声明，Canvas 渲染 drop zone，Sidebar 展示层级树
 
 **与 LayoutPlugin / ServicePlugin 的区别**：
@@ -149,7 +153,7 @@ interface ServicePluginContext {
   /** Hook-integrated 变更方法 */
   update(model: OperationModel, options?: UpdateOptions): void;
   /** 创建临时会话（拖拽预览） */
-  beginTemp(): DraftSession;
+  beginDraft(): DraftSession;
 }
 ```
 
@@ -385,6 +389,84 @@ declare module '@canvix-react/editor-types' {
 
 ---
 
+## Editor 底座 vs Viewer 底座
+
+两个底座提供不同的能力层级，LayoutPlugin 的定义相同（`{ name, slot, component }`），但组件内部可访问的能力不同。
+
+### 能力对比
+
+| 能力                                                 | dock-editor        | dock-viewer                 |
+| ---------------------------------------------------- | ------------------ | --------------------------- |
+| Chronicle（数据引擎 + undo/redo）                    | ✓                  | ✗（只读数据，无 Chronicle） |
+| EditorStateStore（selection, zoom, tools, dirty...） | ✓                  | ✗                           |
+| ServicePlugin（可插拔服务）                          | ✓                  | ✗                           |
+| ShortcutManager                                      | ✓                  | ✗                           |
+| DraftSession（拖拽预览编辑）                         | ✓                  | ✗                           |
+| Save / Dirty 追踪                                    | ✓                  | ✗                           |
+| WidgetRegistry                                       | ✓                  | ✓                           |
+| HookSystem                                           | ✓（完整 hooks）    | ✓（最小 hooks）             |
+| EventBus                                             | ✓                  | ✓                           |
+| LayoutPlugin                                         | ✓                  | ✓                           |
+| WidgetPlugin（渲染）                                 | ✓（editor 渲染器） | ✓（viewer 渲染器）          |
+
+### Hook 范围对比
+
+| Hook                  | dock-editor | dock-viewer |
+| --------------------- | ----------- | ----------- |
+| `app:ready`           | ✓           | ✓           |
+| `app:beforeDestroy`   | ✓           | ✓           |
+| `document:loaded`     | ✓           | ✓           |
+| `document:beforeSave` | ✓           | ✗           |
+| `document:saved`      | ✓           | ✗           |
+| `operation:before`    | ✓           | ✗           |
+| `operation:after`     | ✓           | ✗           |
+| `page:beforeSwitch`   | ✓           | ✗           |
+| `page:switched`       | ✓           | ✗           |
+
+### dock-editor Runtime
+
+```typescript
+interface RuntimeOptions {
+  document: DocumentRuntime;
+  widgets: WidgetPluginDefinition[];
+  plugins: LayoutPluginDefinition[];
+  servicePlugins?: ServicePluginDefinition[];
+  config: EditorConfig;
+  saveAdapter?: SaveAdapter;
+}
+```
+
+Runtime 持有：Chronicle, EditorStateStore, WidgetRegistry, HookSystem, EventBus, ShortcutManager。
+
+布局插件组件通过 React hooks 获取能力：`useEditorRef()`, `useEditorLive()`, `useChronicleSelective()`, `usePageLive()` 等（toolkit-editor + toolkit-shared）。
+
+### dock-viewer Runtime
+
+```typescript
+interface ViewerOptions {
+  document: DocumentRuntime;
+  widgets: WidgetPluginDefinition[];
+  plugins: LayoutPluginDefinition[];
+}
+```
+
+Runtime 持有：WidgetRegistry, HookSystem（最小 hooks）, EventBus。**无 Chronicle，无 EditorStateStore。**
+
+数据通过 `DocumentRefContext` + `PageLiveProvider` 以 props 驱动（非 Chronicle 订阅）。
+
+布局插件组件通过 React hooks 获取能力：仅 toolkit-shared 层（`useDocumentRef()`, `usePageLive()`, `useWidgetLive()`, `useWidgetReader()`）。**不可使用 toolkit-editor 的任何 hook。**
+
+### 类型依赖规则
+
+```
+dock-viewer 侧 → 仅依赖 @canvix-react/shared-types
+dock-editor 侧 → 依赖 @canvix-react/editor-types（重导出 shared-types）
+```
+
+详见 [type-system.md](./type-system.md)。
+
+---
+
 ## Remote Plugin 设计方向（Future）
 
 > 以下为未来扩展方向，当前不实现，仅作为架构预留参考。
@@ -417,27 +499,20 @@ docks/
 │   ├── package.json
 │   └── src/
 │       ├── runtime/
-│       │   ├── index.ts           # Runtime 类
-│       │   ├── plugin-manager.ts  # 插件注册、生命周期调度
-│       │   ├── hook-system.ts     # 钩子注册与触发
-│       │   ├── event-bus.ts       # 类型安全事件总线
-│       │   ├── token-resolver.ts  # Token 解析
-│       │   └── temp-session.ts    # 临时编辑会话
-│       └── index.ts               # 导出 DockEditor, 类型从 @canvix-react/editor-types 重导出
+│       │   ├── index.ts              # Editor Runtime 类
+│       │   ├── builtin-shortcuts.ts  # 内置快捷键注册（非 ServicePlugin）
+│       │   ├── draft-session.ts      # DraftSession 实现
+│       │   ├── shortcut-manager.ts   # ShortcutManager（editor-only 工具）
+│       │   └── token-resolver.ts     # Token 解析
+│       └── index.ts
+│
 └── dock-viewer/
-    └── src/                       # 同上结构，仅 LayoutPlugin，无 ServicePlugin
+    └── src/
+        ├── runtime/
+        │   └── index.ts              # Viewer Runtime 类（极简）
+        └── index.ts
 ```
 
-dock-editor 和 dock-viewer 各自独立的 Runtime 实例，加载不同的插件集合。编辑器 UI 状态（EditorStateStore）由 App 层创建并注入 EditorRefContext，不在 dock 层。
+**共用基础设施**（`@canvix-react/infra`）：EventBus 实现、HookSystem 实现。两个底座共用，不各自实现。
 
----
-
-## Phase 2 迁移要点
-
-1. 将 `LayoutPluginDefinition` 从 `dock-editor/runtime/types.ts` 迁移到 `@canvix-react/editor-types`
-2. 新增 `ServicePluginDefinition` + `ServicePluginContext` 类型到 `@canvix-react/editor-types`
-3. 简化 `LayoutPluginDefinition`：移除 `setup()`，`component` 改为无 props
-4. App.tsx 停止传递 `ctx` prop 给布局插件组件
-5. 各布局插件组件移除 `ctx` 参数，改用 hooks
-6. Runtime 中硬编码的键盘快捷键处理提取为 ServicePlugin 候选（Phase 3 实施）
-7. EventBus module augmentation 目标模块改为 `@canvix-react/editor-types`
+**editor-only 工具**（dock-editor 内部）：ShortcutManager。不放 infra，viewer 不需要。

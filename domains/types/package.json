@@ -9,6 +9,7 @@
     "@canvix-react/chronicle": "workspace:*",
     "@canvix-react/i18n": "workspace:*",
     "@canvix-react/schema-widget": "workspace:*",
+    "@canvix-react/shared-types": "workspace:*",
     "@canvix-react/theme": "workspace:*"
   },
   "devDependencies": {

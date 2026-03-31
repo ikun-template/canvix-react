@@ -8,10 +8,12 @@
   "dependencies": {
     "@canvix-react/chronicle": "workspace:*",
     "@canvix-react/editor-types": "workspace:*",
+    "@canvix-react/infra": "workspace:*",
     "@canvix-react/plugin-manager": "workspace:*",
     "@canvix-react/schema-document": "workspace:*",
     "@canvix-react/schema-page": "workspace:*",
     "@canvix-react/schema-widget": "workspace:*",
+    "@canvix-react/toolkit-editor": "workspace:*",
     "@canvix-react/widget-registry": "workspace:*"
   },
   "devDependencies": {

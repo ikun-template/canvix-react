@@ -187,7 +187,7 @@ interface EditorRefContextValue {
   registry: WidgetRegistry;
   plugins: Pick<LayoutPluginDefinition, 'name' | 'slot'>[];
   update(model: OperationModel, options?: UpdateOptions): void;
-  beginTemp(): DraftSession;
+  beginDraft(): DraftSession;
 
   // ── UI 状态操作（来自 EditorStateStore）──
   setActivePage(pageId: string): void;
@@ -199,9 +199,13 @@ interface EditorRefContextValue {
   setInteracting(value: boolean): void;
   setFlowDrag(widgetId: string | null, size?: [number, number]): void;
   setFlowDropIndex(index: number | null): void;
+  setDirty(value: boolean): void;
   batch(fn: () => void): void;
   getSnapshot(): EditorStateSnapshot;
   onChange(listener: () => void): () => void;
+
+  /** 保存文档 */
+  save(): Promise<void>;
 }
 ```
 
@@ -226,6 +230,7 @@ interface EditorStateSnapshot {
   flowDragWidgetId: string | null;
   flowDropIndex: number | null;
   flowDragWidgetSize: [number, number] | null;
+  dirty: boolean;
 }
 ```
 
@@ -314,6 +319,57 @@ Widget 渲染 slot 内的子 widget 时，为每个子 widget 提供新的 Widge
 ```
 
 子 widget 通过 `useWidget()` 可获取完整的层级信息（自身 id、所属 page、父 widget、所在 slot），用于组装 Operation 或 UI 展示（如面包屑导航）。
+
+---
+
+## Editor 模式 vs Viewer 模式
+
+Context 层级在两种模式下有本质区别。
+
+### Editor 模式
+
+完整的 Context 层级，支持读写操作和 UI 状态管理。
+
+```
+EditorRefContext                   ← chronicle + store + update + beginDraft + save
+│
+├── DocumentRefContext             ← getDocument（由 chronicle 桥接）
+│   ├── DocumentLiveContext        ← subscribe 由 chronicle.onUpdate 驱动
+│   │   ├── PageLiveContext
+│   │   │   └── WidgetLiveContext
+│
+├── EditorLive（hook-based）       ← useEditorLive() 从 EditorStateStore 读取
+```
+
+插件组件可使用：`toolkit-shared`（reader hooks）+ `toolkit-editor`（editor hooks, chronicle hooks, EditorRef/Live）。
+
+### Viewer 模式
+
+最小 Context 层级，仅支持只读渲染。**无 EditorRefContext，无 Chronicle。**
+
+```
+DocumentRefContext                 ← getDocument（由 props 直接注入）
+│
+├── DocumentLiveContext            ← subscribe 由外部 props 变化驱动（或不传 subscribe）
+│   ├── PageLiveContext
+│   │   └── WidgetLiveContext
+```
+
+插件组件仅可使用：`toolkit-shared`（reader hooks）。**不可 import toolkit-editor 的任何内容。**
+
+### 关键区别
+
+| 项目                    | Editor 模式                     | Viewer 模式        |
+| ----------------------- | ------------------------------- | ------------------ |
+| 数据源                  | Chronicle（可变，支持操作）     | Props 注入（只读） |
+| EditorRefContext        | ✓                               | ✗ 不存在           |
+| EditorStateStore        | ✓                               | ✗ 不存在           |
+| DocumentRefContext      | ✓（chronicle 桥接）             | ✓（props 注入）    |
+| Live Provider subscribe | chronicle.onUpdate 过滤         | props 变化或不传   |
+| Widget 渲染器           | `render.editor`                 | `render.viewer`    |
+| Toolkit 依赖            | toolkit-shared + toolkit-editor | 仅 toolkit-shared  |
+
+> 这种分层设计使 `toolkit-shared` 的 Context 和 Provider 对数据源完全无感——通过 `subscribe` prop 和 `getDocument()` 抽象，同一套 Provider 代码同时服务于 editor 和 viewer。
 
 ---
 

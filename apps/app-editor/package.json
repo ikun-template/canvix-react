@@ -30,6 +30,7 @@
     "@canvix-react/toolkit-editor": "workspace:*",
     "@canvix-react/toolkit-shared": "workspace:*",
     "@canvix-react/ui": "workspace:*",
+    "@canvix-react/widget-container": "workspace:*",
     "@canvix-react/widget-image": "workspace:*",
     "@canvix-react/widget-registry": "workspace:*",
     "@canvix-react/widget-shape": "workspace:*",

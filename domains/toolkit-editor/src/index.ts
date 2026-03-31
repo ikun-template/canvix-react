@@ -33,6 +33,9 @@ export { useWidgetEditor } from './hooks/use-widget-editor.js';
 export { useChronicleData } from './hooks/use-chronicle-data.js';
 export { useChronicleSelective } from './hooks/use-chronicle-selective.js';
 
+// Components
+export { EditorSlotRenderer } from './components/editor-slot-renderer.js';
+
 // Re-export types from editor-types for convenience
 export type {
   DraftSession,

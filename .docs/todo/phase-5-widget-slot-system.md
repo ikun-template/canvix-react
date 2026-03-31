@@ -12,13 +12,13 @@
 
 ### 任务
 
-- Widget 通过 `SlotDeclaration` 声明可接受子 widget 的插槽
+- Widget 通过 `WidgetSlot` 声明可接受子 widget 的插槽
 - Canvas 内渲染插槽 drop zone（空插槽显示占位提示）
 - 插槽区域的视觉样式（边框、空态提示）
 
 ### 现有基础
 
-- Schema 已有 `SlotDeclaration`（name, label, accept, maxCount）
+- Schema 已有 `WidgetSlot`（name, label, accept, maxCount）
 - `WidgetRuntime.slots` 已有 `Record<string, string[]>` 结构
 - `SlotRenderer` 已存在（`domains/page-renderer/src/slot-renderer.tsx`）
 - `useWidgetEditor().addToSlot()` API 已存在
@@ -65,13 +65,12 @@
 
 ### 任务
 
-- `accept` 校验：拖拽时实时判断目标插槽是否接受该 widget 类型
-- `maxCount` 校验：插槽已满时禁止拖入
+- `accept` 校验：`accept(ctx: { owner, incoming }) => boolean`，拖拽时实时调用。`owner` 为插槽所属 widget（可读 `slots` 判断已有数量），`incoming` 为即将插入的 widget 列表（支持多个）
 - 校验失败的视觉反馈（禁止图标、颜色变化）
 
 ### 涉及文件
 
-- 校验逻辑工具函数
+- 校验逻辑工具函数（canvas 拖拽和 sidebar 拖拽共用）
 - 拖拽交互中集成校验
 
 ---

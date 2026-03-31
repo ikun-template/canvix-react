@@ -34,7 +34,6 @@ export class ShortcutManager {
     const key = normalizeComboString(combo);
     this.bindings.set(key, binding);
     return () => {
-      // Only remove if the current binding is still ours
       if (this.bindings.get(key) === binding) {
         this.bindings.delete(key);
       }
@@ -46,10 +45,8 @@ export class ShortcutManager {
     if (this.keydownHandler) return;
 
     this.keydownHandler = (e: KeyboardEvent) => {
-      // Skip when typing in form elements
       const tag = (e.target as HTMLElement).tagName;
       if (SKIP_TAGS.has(tag)) return;
-      // Skip contenteditable
       if ((e.target as HTMLElement).isContentEditable) return;
 
       const combo = eventToCombo(e);
@@ -74,7 +71,6 @@ export class ShortcutManager {
   }
 }
 
-/** Normalize a user-provided combo string to a canonical key. */
 function normalizeComboString(combo: string): string {
   const parts = combo
     .toLowerCase()
@@ -88,7 +84,6 @@ function normalizeComboString(combo: string): string {
   return buildKey({ mod, shift, alt, key });
 }
 
-/** Convert a KeyboardEvent to the same canonical key format. */
 function eventToCombo(e: KeyboardEvent): string {
   const combo: NormalizedCombo = {
     mod: e.metaKey || e.ctrlKey,

@@ -2,7 +2,8 @@ import type { WidgetRenderProps } from '@canvix-react/widget-registry';
 
 import type { ShapeData } from './types.js';
 
-export function ShapeRender({ data }: WidgetRenderProps<ShapeData>) {
+export function ShapeRender({ widget }: WidgetRenderProps<ShapeData>) {
+  const { custom_data: data } = widget;
   return (
     <div
       style={{

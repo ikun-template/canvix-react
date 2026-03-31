@@ -1,45 +1,37 @@
 /*
- * Description: Built-in shortcuts ServicePlugin — registers core editor keyboard shortcuts.
+ * Description: Built-in editor keyboard shortcuts — registered directly by Runtime.
  *
  * Author: xiaoyown
  * Created: 2026-03-26
  */
 
-import type { ServicePluginDefinition } from '@canvix-react/editor-types';
+import type { Chronicle } from '@canvix-react/chronicle';
+import type { EventBus } from '@canvix-react/infra';
 
-export const builtinShortcuts: ServicePluginDefinition = {
-  name: 'builtin:shortcuts',
-  setup(ctx) {
-    let unsubs: (() => void)[] = [];
+import type { ShortcutManager } from './shortcut-manager.js';
 
-    return {
-      activate() {
-        unsubs = [
-          ctx.shortcuts.register('mod+z', {
-            handler: () => ctx.chronicle.undo(),
-          }),
-          ctx.shortcuts.register('mod+shift+z', {
-            handler: () => ctx.chronicle.redo(),
-          }),
-          ctx.shortcuts.register('delete', {
-            handler: () => ctx.events.emit('editor:delete-selected', undefined),
-          }),
-          ctx.shortcuts.register('backspace', {
-            handler: () => ctx.events.emit('editor:delete-selected', undefined),
-          }),
-          ctx.shortcuts.register('mod+a', {
-            handler: () => ctx.events.emit('editor:select-all', undefined),
-          }),
-          ctx.shortcuts.register('mod+s', {
-            handler: () => ctx.events.emit('editor:save', undefined),
-          }),
-        ];
-      },
-
-      deactivate() {
-        for (const unsub of unsubs) unsub();
-        unsubs = [];
-      },
-    };
-  },
-};
+/**
+ * Registers core editor shortcuts. Returns cleanup functions.
+ */
+export function registerBuiltinShortcuts(
+  shortcuts: ShortcutManager,
+  chronicle: Chronicle,
+  events: EventBus,
+): (() => void)[] {
+  return [
+    shortcuts.register('mod+z', { handler: () => chronicle.undo() }),
+    shortcuts.register('mod+shift+z', { handler: () => chronicle.redo() }),
+    shortcuts.register('delete', {
+      handler: () => events.emit('editor:delete-selected', undefined),
+    }),
+    shortcuts.register('backspace', {
+      handler: () => events.emit('editor:delete-selected', undefined),
+    }),
+    shortcuts.register('mod+a', {
+      handler: () => events.emit('editor:select-all', undefined),
+    }),
+    shortcuts.register('mod+s', {
+      handler: () => events.emit('editor:save', undefined),
+    }),
+  ];
+}

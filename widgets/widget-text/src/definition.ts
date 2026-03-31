@@ -1,4 +1,4 @@
-import type { WidgetPluginDefinition } from '@canvix-react/editor-types';
+import type { EditorWidgetPluginDefinition } from '@canvix-react/editor-types';
 import { Type } from '@canvix-react/icon';
 import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
 
@@ -8,7 +8,7 @@ import { TextViewer } from './viewer.js';
 
 export type { TextData } from './types.js';
 
-export const textDefinition: WidgetPluginDefinition<TextData> = {
+export const textDefinition: EditorWidgetPluginDefinition<TextData> = {
   type: 'text',
   meta: {
     name: 'widgets.text',
@@ -29,7 +29,7 @@ export const textDefinition: WidgetPluginDefinition<TextData> = {
     viewer: TextViewer,
   },
   inspector: {
-    render: () => [
+    properties: () => [
       createBasePropertyGroup(),
       {
         title: '文本属性',

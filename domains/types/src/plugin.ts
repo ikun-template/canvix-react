@@ -1,5 +1,5 @@
 /*
- * Description: Plugin system interfaces — LayoutPlugin, ServicePlugin, HookSystem, EventBus.
+ * Description: Editor-only plugin interfaces — ServicePlugin, DraftSession, Shortcuts.
  *
  * Author: xiaoyown
  * Created: 2026-03-26
@@ -10,21 +10,13 @@ import type {
   OperationModel,
   UpdateOptions,
 } from '@canvix-react/chronicle';
-import type { ComponentType } from 'react';
+import type {
+  EventBus,
+  HookSystem,
+  WidgetRegistry,
+} from '@canvix-react/shared-types';
 
 import type { EditorStore } from './editor-state.js';
-import type { WidgetRegistry } from './widget.js';
-
-// ── Layout Plugin ──────────────────────────────────────────────────────────
-
-export interface LayoutPluginDefinition {
-  /** Unique identifier. */
-  name: string;
-  /** Slot name this plugin renders into (e.g. 'canvas', 'sidebar'). */
-  slot: string;
-  /** React component rendered via portal into the slot (no props). */
-  component: ComponentType;
-}
 
 // ── Service Plugin ─────────────────────────────────────────────────────────
 
@@ -75,18 +67,6 @@ export interface DraftSession {
   rollback(): void;
 }
 
-// ── Hook System ────────────────────────────────────────────────────────────
-
-export interface HookSystem {
-  register(name: string, type?: 'sync' | 'waterfall'): void;
-  on<T = unknown>(
-    name: string,
-    handler: ((data: T) => void) | ((data: T) => T | void),
-  ): () => void;
-  call<T>(name: string, data: T): T;
-  clear(): void;
-}
-
 // ── Shortcut Registry ─────────────────────────────────────────────────────
 
 export interface ShortcutBinding {
@@ -103,20 +83,4 @@ export interface ShortcutRegistry {
    * - `mod` maps to Cmd (macOS) / Ctrl (others)
    */
   register(combo: string, binding: ShortcutBinding): () => void;
-}
-
-// ── Event Bus ──────────────────────────────────────────────────────────────
-
-export interface EventMap {
-  [key: string]: unknown;
-}
-
-export interface EventBus {
-  on<K extends string>(
-    event: K,
-    listener: (data: EventMap[K]) => void,
-  ): () => void;
-  emit<K extends string>(event: K, data: EventMap[K]): void;
-  off(event: string): void;
-  clear(): void;
 }

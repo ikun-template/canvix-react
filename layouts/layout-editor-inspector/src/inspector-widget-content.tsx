@@ -41,7 +41,7 @@ export function InspectorWidgetContent({
 
   // version 作为依赖，widget 属性变更时重新计算 groups
   const groups = useMemo(
-    () => definition?.inspector?.render(widget) ?? [],
+    () => definition?.inspector?.properties?.(widget) ?? [],
     [definition, widget, version],
   );
 

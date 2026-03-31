@@ -11,24 +11,23 @@ import { Chronicle } from '@canvix-react/chronicle';
 import type {
   DraftSession,
   EditorConfig,
+  EditorWidgetPluginDefinition,
   LayoutPluginDefinition,
   ServicePluginContext,
   ServicePluginDefinition,
-  WidgetPluginDefinition,
   WidgetRegistry,
 } from '@canvix-react/editor-types';
+import { EventBus, HookSystem } from '@canvix-react/infra';
 import {
   LayoutPluginManager,
   ServicePluginManager,
 } from '@canvix-react/plugin-manager';
 import type { DocumentRuntime } from '@canvix-react/schema-document';
+import { EditorStateStore } from '@canvix-react/toolkit-editor';
 import { createWidgetRegistry } from '@canvix-react/widget-registry';
 
-import { builtinShortcuts } from './builtin-shortcuts.js';
+import { registerBuiltinShortcuts } from './builtin-shortcuts.js';
 import { createDraftSession } from './draft-session.js';
-import { EditorStateStore } from './editor-state-store.js';
-import { EventBus } from './event-bus.js';
-import { HookSystem } from './hook-system.js';
 import { ShortcutManager } from './shortcut-manager.js';
 import { TokenResolver } from './token-resolver.js';
 
@@ -39,7 +38,7 @@ export interface SaveAdapter {
 
 export interface RuntimeOptions {
   document: DocumentRuntime;
-  widgets: WidgetPluginDefinition[];
+  widgets: EditorWidgetPluginDefinition[];
   config: EditorConfig;
   plugins: LayoutPluginDefinition[];
   servicePlugins?: ServicePluginDefinition[];
@@ -77,8 +76,6 @@ export class Runtime {
     this.servicePlugins = new ServicePluginManager();
 
     this.layoutPlugins.registerAll(options.plugins);
-    // Built-in service plugins first, then user-provided ones
-    this.servicePlugins.register(builtinShortcuts);
     if (options.servicePlugins) {
       this.servicePlugins.registerAll(options.servicePlugins);
     }
@@ -137,6 +134,11 @@ export class Runtime {
       this.events.on('editor:save', () => {
         this.save();
       }),
+    );
+
+    // Built-in shortcuts (not a ServicePlugin — these are core editor capabilities)
+    this._cleanups.push(
+      ...registerBuiltinShortcuts(this.shortcuts, this.chronicle, this.events),
     );
 
     // ServicePlugin lifecycle: setup → mount → activate

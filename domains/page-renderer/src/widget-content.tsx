@@ -17,5 +17,5 @@ export function WidgetContent({ widget }: WidgetContentProps) {
   const Component =
     mode === 'editor' ? definition.render.editor : definition.render.viewer;
 
-  return <Component data={widget.custom_data} />;
+  return <Component widget={widget} />;
 }

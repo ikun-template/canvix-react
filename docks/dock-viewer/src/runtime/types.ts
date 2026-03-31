@@ -1,31 +1,28 @@
-import type { Chronicle } from '@canvix-react/chronicle';
-import type { WidgetRegistry } from '@canvix-react/widget-registry';
+/*
+ * Description: Viewer runtime types.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
 
-import type { EventBus } from './event-bus.js';
-import type { HookSystem } from './hook-system.js';
+import type { Chronicle } from '@canvix-react/chronicle';
+import type {
+  EventBus,
+  HookSystem,
+  LayoutPluginDefinition,
+  WidgetRegistry,
+} from '@canvix-react/shared-types';
+
 import type { ResolveContext, TokenResolver } from './token-resolver.js';
 
-export interface PluginContext {
+export type { LayoutPluginDefinition };
+
+export interface ViewerPluginContext {
   hooks: HookSystem;
   events: EventBus;
   chronicle: Chronicle;
   registry: WidgetRegistry;
   tokenResolver: TokenResolver;
   getSlotElement(name: string): HTMLElement | null;
-
-  /** Resolve token strings like `{theme.primary}` with context. */
   resolveToken(value: string, context: ResolveContext): string;
-}
-
-export interface PluginInstance {
-  mount?(): void | Promise<void>;
-  activate?(): void | Promise<void>;
-  deactivate?(): void | Promise<void>;
-  unmount?(): void | Promise<void>;
-  destroy?(): void | Promise<void>;
-}
-
-export interface PluginDefinition {
-  name: string;
-  setup(ctx: PluginContext): PluginInstance | Promise<PluginInstance>;
 }

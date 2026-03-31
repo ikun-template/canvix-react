@@ -1,4 +1,4 @@
-import type { WidgetPluginDefinition } from '@canvix-react/editor-types';
+import type { EditorWidgetPluginDefinition } from '@canvix-react/editor-types';
 import { Square } from '@canvix-react/icon';
 import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
 
@@ -8,7 +8,7 @@ import { ShapeViewer } from './viewer.js';
 
 export type { ShapeData } from './types.js';
 
-export const shapeDefinition: WidgetPluginDefinition<ShapeData> = {
+export const shapeDefinition: EditorWidgetPluginDefinition<ShapeData> = {
   type: 'shape',
   meta: {
     name: 'widgets.shape',
@@ -30,7 +30,7 @@ export const shapeDefinition: WidgetPluginDefinition<ShapeData> = {
     viewer: ShapeViewer,
   },
   inspector: {
-    render: () => [
+    properties: () => [
       createBasePropertyGroup(),
       {
         title: '形状属性',

@@ -14,7 +14,7 @@ export {
 export {
   EditorStateStore,
   type EditorStateStoreOptions,
-} from './runtime/editor-state-store.js';
+} from '@canvix-react/toolkit-editor';
 
 // Re-export public types from @canvix-react/editor-types
 export type {

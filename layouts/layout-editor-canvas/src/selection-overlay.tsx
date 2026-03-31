@@ -73,6 +73,7 @@ export function SelectionOverlay({ pageContainerRef }: SelectionOverlayProps) {
     observer.observe(container, {
       attributes: true,
       attributeFilter: ['style'],
+      childList: true,
       subtree: true,
     });
 

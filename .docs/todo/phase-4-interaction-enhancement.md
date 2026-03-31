@@ -8,18 +8,16 @@
 
 ---
 
-## 4.1 Toolbox 缩放百分比显示 + 输入调整
+## 4.1 Toolbox 缩放控制 + 视口重置
 
 ### 任务
 
-- 在 toolbox 区域添加缩放百分比 number input
-- 显示当前 zoom 值（百分比格式）
-- 输入调整：用户输入百分比值，回车应用
-- 范围约束：`ZOOM_MIN` ~ `ZOOM_MAX`（10% ~ 500%）
+- 缩放百分比 number input：显示当前 zoom（百分比格式），回车/失焦应用，范围 `ZOOM_MIN` ~ `ZOOM_MAX`（10% ~ 500%）
+- 重置按钮：缩放归 100% + page 居中到视口，用于 page 被拖出可视范围后找回
 
 ### 涉及文件
 
-- `layouts/layout-editor-toolbox/src/toolbox.tsx` — 添加 zoom input
+- `layouts/layout-editor-toolbox/src/toolbox.tsx` — 添加 zoom input + 重置按钮
 
 ---
 
@@ -56,5 +54,6 @@
 ## 完成标准
 
 - [ ] Toolbox 显示当前缩放百分比，可通过输入调整
+- [ ] 重置按钮可用：zoom 归 100% + page 居中
 - [ ] Sidebar page explorer 支持拖拽排序
 - [ ] Sidebar widget explorer 支持拖拽排序

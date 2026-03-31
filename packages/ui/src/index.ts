@@ -73,3 +73,5 @@ export {
   PopoverTitle,
   PopoverTrigger,
 } from './components/popover.js';
+
+export { cn } from './lib/utils.js';

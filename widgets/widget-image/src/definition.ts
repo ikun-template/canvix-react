@@ -1,4 +1,4 @@
-import type { WidgetPluginDefinition } from '@canvix-react/editor-types';
+import type { EditorWidgetPluginDefinition } from '@canvix-react/editor-types';
 import { ImageIcon } from '@canvix-react/icon';
 import { createBasePropertyGroup } from '@canvix-react/inspector-controls';
 
@@ -8,7 +8,7 @@ import { ImageViewer } from './viewer.js';
 
 export type { ImageData } from './types.js';
 
-export const imageDefinition: WidgetPluginDefinition<ImageData> = {
+export const imageDefinition: EditorWidgetPluginDefinition<ImageData> = {
   type: 'image',
   meta: {
     name: 'widgets.image',
@@ -28,7 +28,7 @@ export const imageDefinition: WidgetPluginDefinition<ImageData> = {
     viewer: ImageViewer,
   },
   inspector: {
-    render: () => [
+    properties: () => [
       createBasePropertyGroup(),
       {
         title: '图片属性',

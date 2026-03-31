@@ -1,3 +1,10 @@
+/*
+ * Description: Hook system — sync and waterfall hooks for lifecycle interception.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
+
 type SyncHandler<T = unknown> = (data: T) => void;
 type WaterfallHandler<T = unknown> = (data: T) => T | void;
 

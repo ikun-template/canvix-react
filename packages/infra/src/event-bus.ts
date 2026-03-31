@@ -1,3 +1,10 @@
+/*
+ * Description: Generic pub/sub event bus.
+ *
+ * Author: xiaoyown
+ * Created: 2026-03-26
+ */
+
 export interface EventMap {
   [key: string]: unknown;
 }

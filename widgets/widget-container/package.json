@@ -1,0 +1,24 @@
+{
+  "name": "@canvix-react/widget-container",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./editor": "./src/editor.tsx",
+    "./viewer": "./src/viewer.tsx",
+    "./definition": "./src/definition.ts"
+  },
+  "dependencies": {
+    "@canvix-react/editor-types": "workspace:*",
+    "@canvix-react/icon": "workspace:*",
+    "@canvix-react/inspector-controls": "workspace:*",
+    "@canvix-react/page-renderer": "workspace:*",
+    "@canvix-react/toolkit-editor": "workspace:*",
+    "@canvix-react/widget-registry": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5"
+  },
+  "peerDependencies": {
+    "react": ">=19"
+  }
+}

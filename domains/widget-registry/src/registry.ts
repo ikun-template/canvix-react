@@ -8,7 +8,7 @@
 import type {
   WidgetPluginDefinition,
   WidgetRegistry,
-} from '@canvix-react/editor-types';
+} from '@canvix-react/shared-types';
 
 export function createWidgetRegistry(): WidgetRegistry {
   const map = new Map<string, WidgetPluginDefinition>();

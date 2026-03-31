@@ -2,7 +2,7 @@
 
 > 文档持久化、保存功能、快捷键系统、插件架构实现、职责下沉。
 
-## 状态：进行中（遗留 3.9 / 3.10）
+## 状态：已完成
 
 ## 前置：Phase 2 基础重构完成
 
@@ -136,21 +136,41 @@ new DockEditor({
 
 **解法**：`EditorStateStore` 应该放在 domains 层（如 `toolkit-editor` 自身或独立包），dock-editor 从 domains 导入。底座组装 domains 提供的能力，而非 domains 去取底座的实现。
 
-### 3.10 快捷键不应是 ServicePlugin，基础设施类应抽到 packages
+### 3.10 基础设施分层修正
 
-**问题 A**：快捷键是编辑器的基础能力，不是"可插拔的服务"。用 ServicePlugin 模式增加了不必要的抽象层。应该是 Runtime 的内置能力，直接在初始化时注册，不走 ServicePlugin 生命周期。
-
-**问题 B**：`EventBus`、`HookSystem`、`ShortcutManager` 都是通用基础设施类，当前全部定义在 `docks/dock-editor/src/runtime/`。这些是可复用的工具，应该抽到 `packages/` 层：
-
-| 类 | 当前位置 | 应该在 |
-|---|---------|--------|
-| `EventBus` | `dock-editor/runtime/event-bus.ts` | `packages/` 层 |
-| `HookSystem` | `dock-editor/runtime/hook-system.ts` | `packages/` 层 |
-| `ShortcutManager` | `dock-editor/runtime/shortcut-manager.ts` | `packages/` 层 |
+**问题**：`@canvix-react/infra` 混合了共用工具和 editor-only 工具。`ShortcutManager` 是 editor-only 能力（viewer 没有快捷键），但和共用的 `EventBus` / `HookSystem` 放在了同一个包。
 
 **解法**：
-- 基础设施类抽到 packages 层，dock-editor 从 packages 导入
-- 快捷键注册改为 Runtime 内置逻辑（`builtin-shortcuts.ts` 在 Runtime.start() 中直接调用，不走 ServicePlugin）
+
+- `@canvix-react/infra` 仅保留 `EventBus` + `HookSystem`（editor/viewer 共用）
+- `ShortcutManager` 移回 `dock-editor` 内部（editor-only 工具）
+- 快捷键注册保持 Runtime 内置逻辑，不走 ServicePlugin
+
+### 3.11 dock-viewer 同步架构重构
+
+**问题**：`docks/dock-viewer/` 完全未被 Phase 2/3 覆盖：
+
+- 类型命名中性（`PluginContext` / `PluginDefinition`），与 editor 侧混淆
+- 基础设施（EventBus、HookSystem、PluginManager）各自独立实现，未复用 `@canvix-react/infra`
+- 自定义类型未纳入统一类型体系
+
+**解法**：
+
+- 类型改用 `@canvix-react/shared-types`（viewer 仅依赖共用类型，**不依赖 editor-types**）
+- 基础设施改为从 `@canvix-react/infra` 导入
+- 删除 dock-viewer 内部重复的 EventBus / HookSystem / PluginManager 实现
+- viewer Runtime 极简化：仅持有 WidgetRegistry + HookSystem（最小 hooks）+ EventBus，无 Chronicle / EditorStateStore / ShortcutManager
+
+### 3.12 类型包拆分：editor-types → shared-types + editor-types
+
+**问题**：当前 `@canvix-react/editor-types` 混合了共用类型和 editor-only 类型。viewer 侧需要 Widget 类型和 LayoutPluginDefinition 但不应依赖 editor 包。
+
+**解法**（详见 [type-system.md](../.docs/architecture/type-system.md)）：
+
+- 新建 `@canvix-react/shared-types`：渲染基础类型（WidgetPluginDefinition, WidgetMeta, WidgetRenderMap, WidgetSlot, WidgetRegistry, LayoutPluginDefinition, HookSystem/EventBus 接口）
+- `@canvix-react/editor-types` 改为仅包含 editor-only 类型（ServicePlugin*, DraftSession, EditorState*, Inspector*, Shortcut*, EditorConfig），并重导出 shared-types
+- editor 侧消费者 import 不变（editor-types 重导出 shared-types）
+- viewer 侧消费者改为 `import from '@canvix-react/shared-types'`
 
 ---
 
@@ -165,6 +185,9 @@ new DockEditor({
 - [x] App.tsx 仅负责配置 + 文档传入 + 渲染
 - [x] shortcuts-plugin 迁入 dock-editor 内置
 - [x] WidgetRegistry 创建下沉到 dock-editor，App 只传 widget 定义列表
-- [ ] 依赖方向修复：EditorStateStore 归还 domains 层
-- [ ] 快捷键改为 Runtime 内置逻辑，移除 ServicePlugin 包装
-- [ ] EventBus / HookSystem / ShortcutManager 抽到 packages 层
+- [x] 依赖方向修复：EditorStateStore 归还 domains 层
+- [x] 快捷键改为 Runtime 内置逻辑，移除 ServicePlugin 包装
+- [x] EventBus / HookSystem 抽到 packages/infra
+- [x] ShortcutManager 从 infra 移回 dock-editor 内部
+- [x] 类型包拆分：新建 shared-types，editor-types 仅保留 editor-only 类型
+- [x] dock-viewer 重构：依赖 shared-types + infra，删除内部重复实现
